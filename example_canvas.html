@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Text with Inline Image</title>
+</head>
+<body>
+    <canvas id="myCanvas" width="400" height="100"></canvas>
+
+    <script>
+        // Get the canvas element
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        // Set the font and size for the text
+        ctx.font = "20px Arial";
+
+        // Draw the text
+        ctx.fillText("Hello world", 10, 30);
+
+        // Load the image
+        var img = new Image();
+        img.src = "globe.png";
+
+        // After the image has loaded, draw it onto the canvas
+        img.onload = function() {
+            // Resize the image to the height of the text
+            var textHeight = parseInt(ctx.font);
+            var scaleFactor = textHeight / img.height;
+            var imageWidth = img.width * scaleFactor;
+            var imageHeight = img.height * scaleFactor;
+
+            // Draw the image
+            ctx.drawImage(img, 10 + ctx.measureText("Hello world").width, 30 - imageHeight, imageWidth, imageHeight);
+            
+            // Draw the exclamation mark
+            ctx.fillText("!", 10 + ctx.measureText("Hello world").width + imageWidth, 30);
+        };
+    </script>
+</body>
+</html>

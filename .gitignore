@@ -1,0 +1,9 @@
+
+# images
+*.png
+*.jpg
+*.jpeg
+*.svg
+
+# fonts
+*.ttf

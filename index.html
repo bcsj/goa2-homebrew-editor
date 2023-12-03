@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="drawColored.js"></script>
+    <script src="cards.js"></script>
+    <script src="card-render.js"></script>
+    <script src="editor.js"></script>
+    <title>Document</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            margin-top: 10px;
+            gap: 5px;
+
+            > canvas { border: 1px solid #000; }
+            > canvas, img {
+                --scale: 0.75;
+                width: calc(630px * var(--scale));
+                height: calc(880px * var(--scale));
+            }
+            > div {
+                display: flex;
+                flex-direction: column-reverse;
+                justify-content: center;
+                align-items: center;
+                margin: 0px;
+                padding: 5px;
+                gap: 5px;
+                box-shadow: 0px 0px 10px #00000099;
+                width: 300px; 
+                height: 120px; 
+                border-radius: 12.5px;
+
+                > button {
+                    font-family: ModestoPosterW05-Regular;
+                    font-size: 16px;
+                    height: 25px;
+                    padding-left: 20px;
+                    padding-right: 20px;
+
+                    border-radius: 12.5px;
+                }
+            }
+        }
+
+        
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <canvas id="card" width="630" height="880"></canvas>
+        <!--<img src="cards-ex2.png" alt="" />-->
+        <div id="stat">
+            <button>Poor</button>
+        </div>
+    </div>
+    <div class="container">
+        <button onclick="render(card2)">Render</button>
+        <button onclick="saveCanvasAsPNG()">Save Canvas as PNG</button>
+    </div>
+
+    <script>
+        function saveCanvasAsPNG() {
+            // Get the canvas element and its context
+            var canvas = document.getElementById("card");
+            var ctx = canvas.getContext("2d");
+
+            // Convert the canvas content to a data URL
+            var dataURL = canvas.toDataURL("image/png");
+
+            // Create a link element
+            var link = document.createElement("a");
+            link.href = dataURL;
+            link.download = "card.png"; // Set the file name
+
+            // Simulate a click on the link to trigger the download
+            link.click();
+        }
+    </script>
+</body>
+</html>
