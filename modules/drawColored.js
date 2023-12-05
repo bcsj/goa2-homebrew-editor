@@ -31,7 +31,7 @@ imageFilterChannel.filters = {
     alpha: "#000",
 };
 
-function drawColored(ctx, img, x, y, W, H, color) {
+export default function drawColored(ctx, img, x, y, W, H, color) {
 
     const channels = [];
     channels[0] = imageFilterChannel(img, "red");

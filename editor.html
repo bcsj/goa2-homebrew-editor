@@ -4,788 +4,530 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <script src="drawColored.js"></script>
-    <script src="cards.js"></script>
-    <script src="card-render.js"></script>
-    <script src="editor.js"></script>
+    <link rel="stylesheet" href="styles/editor.css">
+    <!--<script src="drawColored.js"></script>-->
+    <!--<script src="cards.js"></script>-->
+    <!--<script type="module" src="card-render.js"></script>-->
+    <!--<script src="editor.js"></script>-->
     <script src="app.js"></script>
     <title>Document</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: Verdana, Geneva, Tahoma, sans-serif;
-            font-size: 13px;
-            padding: 0;
-            margin: 0;
-        }
-
-        .container {
-            --fg-color: teal;
-            --bg-color: lightblue;
-            --on-color: lightsalmon;
-            --off-fg-color: lightgray;
-            --off-bg-color: whitesmoke;
-        }
-
-        .container *:disabled, .container .disabled {
-            background-color: var(--off-bg-color);
-            color: var(--off-fg-color);
-            border-color: var(--off-fg-color);
-        }
-
-        .container label, .container select {
-            cursor: pointer;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto;
-            margin-top: 10px;
-            gap: 5px;
-
-            width: 60%;
-            min-height: 100px;
-            padding: 10px;
-
-            > div {
-                display: flex;
-                flex-direction: row;
-                justify-content: left;
-                gap: 5px;
-
-                height: 50px;
-                width: 100%;
-
-                border-bottom: 1px dotted gray;
-
-                > div {
-                    position: relative;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    padding: 5px;
-                }
-
-                > div:first-child {
-                    flex: 0 0 120px;
-                    justify-content: left;
-                }
-            }
-
-            > div.flex-height {
-                height: auto;
-                > div {
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: left;
-                    align-items: start;
-                }
-            }
-
-            > div:last-child {
-                border: none;
-            }
-
-            > input[type="checkbox"] { display: none; }
-            > input[type="checkbox"]:not(:checked) + div { display: none; }
-        }
-
-        /* TIER CHECKBOXES */
-        .tier {
-            display: flex;
-            flex-direction: row;
-            gap: 5px;
-
-            > input[type="checkbox"] {
-                display: none;
-            }
-
-            > label {
-                display: flex;
-                border: 2px solid var(--off-fg-color);
-                border-radius: 5px;
-                width: 35px;
-                height: 35px;
-                justify-content: center;
-                align-items: center;
-                background-color: var(--off-bg-color);
-                color: var(--off-fg-color);
-            }
-
-            > input:checked + label {
-                border-color: var(--fg-color);
-                background-color: var(--bg-color);
-                color: var(--fg-color);
-            }
-        }
-
-        /* ATTRIBUTE CHECKBOXES */
-        .attr {
-            display: flex;
-            flex-direction: row;
-            gap: 5px;
-
-            > input[type="checkbox"] {
-                display: none;
-            }
-
-            > label {
-                display: flex;
-                border: 2px solid var(--fg-color);
-                border-radius: 5px;
-                width: 35px;
-                height: 35px;
-                justify-content: center;
-                align-items: center;
-                background-color: var(--off-bg-color);
-                color: lightgray;
-            }
-
-            > input:checked + label {
-                background-color: var(--bg-color);
-                color: var(--fg-color);
-
-                > img { filter: invert(1); }
-            }
-
-            > label > img {
-                filter: invert(.5);
-                height: 100%;
-            } 
-        }
-
-        /* ADVANCED FEATURES */
-        .features > div {
-            display: flex;
-            flex-direction: row;
-            gap: 5px;
-            border: 2px solid var(--fg-color);
-            border-radius: 5px;
-            height: 35px;
-            min-width: 35px;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--bg-color);
-            padding: 0px;
-
-            > input { display: none;}
-            > label {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                min-width: 35px;
-                padding: 0px 5px;
-                height: 100%;
-                border-radius: 5px;
-
-                > img {
-                    filter: invert(100);
-                    height: 100%;
-                }
-            }
-            > label:hover {
-                background-color: var(--off-bg-color);
-            }
-
-            > input:checked + label {
-                background-color: var(--on-color);
-            }
-        }
-
-        /* STATS INPUTS */
-        .stats, .names {
-            display: flex;
-            flex-direction: row;
-            gap: 5px;
-        }
-        input, 
-        select, 
-        textarea, 
-        .items > div, 
-        .subtype > div {
-            display: flex;
-            border: 2px solid var(--fg-color);
-            border-radius: 5px;
-            text-align: center;
-            background-color: var(--bg-color);
-            color: var(--fg-color);
-        }
-
-        .preview.stats > span {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            border: 2px solid var(--off-fg-color);
-            background-color: var(--off-bg-color);
-            border-radius: 5px;
-            text-align: center;
-            color: var(--off-fg-color);
-        }
-        .preview.stats > span:not(.disabled) {
-            border-color: var(--fg-color);
-            background-color: var(--bg-color);
-            color: var(--fg-color);
-        }
-
-        .stats > input,
-        .preview.stats > span {
-            width: 35px;
-            height: 35px;
-        }
-        select, .names > input {
-            width: 120px;
-            height: 35px;
-        }
-
-        /* TEXTBOX */
-        .textbox {
-
-            > div {
-                flex: 1;
-
-                > textarea {
-                    text-align: left;
-                    width: 100%;
-                    height: 100px;
-                    padding: 3px;
-                    margin-bottom: 5px;
-                }
-            }
-
-            > .preview {
-                /*width: 360px;*/
-                flex: 1;
-
-                > p {
-                    padding-bottom: 5px;
-                    margin-bottom: 5px;
-                    > b { color: var(--fg-color); }
-                }
-            }
-        }
-
-        /* CARD TYPE */
-        .card-type {
-            display: flex;
-            gap: 5px;
-        }
-
-        /* ITEMS & SUBTYPE */
-        .items, .subtype {
-            display: flex;
-            flex-direction: row;
-            gap: 5px;
-            
-            > div {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 5px;
-                height: 35px;
-                min-width: 35px;
-
-                > input { display: none; }
-                > label {
-                    height: 100%;
-                    border-radius: 5px;
-                    
-                    > img {
-                        filter: invert(.5);
-                        height: 100%;
-                    }
-                }
-            }
-            > div:not(.disabled) {
-                > input:checked + label { background-color: var(--on-color); }
-                > label:hover { background-color: var(--off-bg-color); }
-                > label > img { filter: invert(1); }
-                > input:not(:checked) + label > img { filter: invert(0.75); } 
-            }
-
-            > .tier-I > img {
-                filter: invert(.75);
-                height: 100%;
-            } 
-        }
-
-        /* HELP & TOOLTIPS */
-        .qmark {
-            --size: 25px;
-            width: var(--size);
-            height: var(--size);
-            border-radius: calc(var(--size)/2);
-            border: 2px solid var(--fg-color);
-            background-color: var(--bg-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: absolute;
-            top: 5px;
-            right: 0px;
-            cursor: help;
-        }
-
-        .container > .help {
-            display: none;
-            font-style: italic;
-            border: 2px solid var(--fg-color);
-            background-color: var(--bg-color);
-            border-radius: 10px;
-            
-            > div > div {
-                display: flex;
-                flex-direction: column;
-                justify-content: left;
-                align-items: start;
-                gap: 3px;
-            }
-            
-            .code {
-                font-family: monospace;
-                font-style: normal;
-                background-color: var(--fg-color);
-                color: white;
-                border-radius: 5px;
-                padding: 1px 3px;
-            }
-        }
-        .container > input:checked + .help { display: flex; }
-
-        /* TEST */
-        .card-preview {
-            > div > button {
-                border-radius: 10px;
-                border: 2px solid var(--fg-color);
-                background-color: var(--bg-color);
-                color: var(--fg-color);
-            }
-        }
-
-        #mydiv {
-            position: absolute;
-            z-index: 9;
-            background-color: #f1f1f1;
-            border: 1px solid #d3d3d3;
-            text-align: center;
-            width: 300px;
-            resize: both;
-            overflow: auto;
-        }
-
-        #mydivheader {
-            padding: 10px;
-            cursor: move;
-            z-index: 10;
-            background-color: #2196F3;
-            color: #fff;
-        }
-    </style>
 </head>
 <body>
-    <div id="mydiv">
-        <!-- Include a header DIV with the same name as the draggable DIV, followed by "header" -->
-        <div id="mydivheader">Click here to move</div>
-        <canvas id="card" width="630" height="880" style="border: 1px solid salmon; width: 100%; aspect-ratio: 0.7159;"></canvas>
-    </div>
     <div class="container">
-        <div>
-            <div>Supertype:</div>
-            <div>
-                <select id="supertype">
-                    <option>Nonbasic</option>
-                    <option>Basic</option>
-                    <option>Ultimate</option>
-                </select>
+        <div class="main-panel">
+            <div class="navigation">
+                <div><img src="gui-icons/angle-left-solid.svg" alt="" />Back</div>
+                <div><img src="gui-icons/pen-to-square-solid.svg" alt="" />Editor</div>
+                <div><img src="gui-icons/gear-solid.svg" alt="" />Settings</div>
+                <div><img src="gui-icons/floppy-disk-solid.svg" alt="" />Save</div>
+                <div><img src="gui-icons/file-arrow-down-solid.svg" alt="" />Download</div>
             </div>
-            <div>Stats:</div>
-            <div>
-                <select id="stat-type">
-                    <option>Profile</option>
-                    <option>Inherit</option>
-                    <option>Custom</option>
-                </select>
-            </div>
-            <div>Color:</div>
-            <div>
-                <select id="card-color">
-                    <option>Red</option>
-                    <option>Blue</option>
-                    <option>Green</option>
-                    <option>Gold</option>
-                    <option>Silver</option>
-                    <option>Purple</option>
-                    <option>Custom</option>
-                </select>
-            </div>
-        </div>
-        <div>
-            <div>Tiers:</div>
-            <div class="tier">
-                <input type="checkbox" value="I" id="tier-I-toggle" name="tier-toggle" checked>
-                <label for="tier-I-toggle">I</label>
-                <input type="checkbox" value="II" id="tier-II-toggle" name="tier-toggle" checked>
-                <label for="tier-II-toggle">II</label>
-                <input type="checkbox" value="III" id="tier-III-toggle" name="tier-toggle" checked>
-                <label for="tier-III-toggle">III</label>
-            </div>
-            <div>Attributes:</div>
-            <div class="attr">
-                <input type="checkbox" value="initiative" id="initiative-toggle" name="attr-toggle" checked>
-                <label for="initiative-toggle" style="display: none;"><img src="svg/item-initiative.svg" alt="" /></label>
-                <input type="checkbox" value="defense" id="defense-toggle" name="attr-toggle" checked>
-                <label for="defense-toggle"><img src="svg/item-defense.svg" alt="" /></label>
-                <input type="checkbox" value="movement" id="movement-toggle" name="attr-toggle" checked>
-                <label for="movement-toggle"><img src="svg/item-movement.svg" alt="" /></label>
-                <input type="checkbox" value="attack" id="attack-toggle" name="attr-toggle" checked>
-                <label for="attack-toggle"><img src="svg/item-attack.svg" alt="" /></label>
-            </div>
-            <div>Features</div>
-            <div class="features">
+            <div class="editor">
+                <div class="card-id">
+                    <div>Card ID</div>
+                    <div><input id="card-id" type="text" value="" placeholder="No ID generated yet ..." disabled /></div>
+                </div>
                 <div>
-                    <!--<input type="radio" value="on" id="features-simple" name="features-toggle">
-                    <label for="features-simple">Simple</label>-->
-                    <input type="radio" id="features-normal" name="features-toggle" checked>
-                    <label for="features-normal">Normal</label>
-                    <input type="radio" id="features-advanced" name="features-toggle">
-                    <label for="features-advanced">Advanced</label>
+                    <div>Supertype:</div>
+                    <div>
+                        <select id="supertype">
+                            <option>Nonbasic</option>
+                            <option>Basic</option>
+                            <option>Ultimate</option>
+                        </select>
+                    </div>
+                    <div>Stats:</div>
+                    <div>
+                        <select id="stat-type">
+                            <option>Profile</option>
+                            <option>Inherit</option>
+                            <option>Custom</option>
+                        </select>
+                    </div>
+                    <div>Color:</div>
+                    <div>
+                        <select id="card-color">
+                            <option>Red</option>
+                            <option>Blue</option>
+                            <option>Green</option>
+                            <option>Gold</option>
+                            <option>Silver</option>
+                            <option>Purple</option>
+                            <option>Custom</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <input type="checkbox" value="initiative" id="initiative-hide" checked>
-        <div class="stat">
-            <div>Initiative:</div>
-            <div class="stat-profile">
-                <select id="initiative-profile" data-value="Average">
-                    <option>Exceptional</option>
-                    <option>Very Good</option>
-                    <option>Good</option>
-                    <option>Above Average</option>
-                    <option selected>Average</option>
-                    <option>Below Average</option>
-                    <option>Poor</option>
-                    <option>Very Poor</option>
-                    <option>Custom</option>
-                </select>
-            </div>
-            <div>Modifiers</div>
-            <div class="stats">
-                <input id="initiative-tier-I" class="tier-I" type="text" value="0">
-                <input id="initiative-tier-II" class="tier-II" type="text" value="0">
-                <input id="initiative-tier-III" class="tier-III" type="text" value="0">
-            </div>
-            <div>Values</div>
-            <div class="preview stats">
-                <span class="tier-I"   id="preview-initiative-tier-I">...</span>
-                <span class="tier-II"  id="preview-initiative-tier-II">...</span>
-                <span class="tier-III" id="preview-initiative-tier-III">...</span>
-            </div>
-        </div>
-        <input type="checkbox" value="defense" id="defense-hide" name="attr-toggle" checked>
-        <div class="stat">
-            <div>Defense:</div>
-            <div class="stat-profile">
-                <select id="defense-profile" data-value="Average">
-                    <option>Exceptional</option>
-                    <option>Very Good</option>
-                    <option>Good</option>
-                    <option>Above Average</option>
-                    <option selected>Average</option>
-                    <option>Below Average</option>
-                    <option>Poor</option>
-                    <option>Very Poor</option>
-                    <option>Custom</option>
-                </select>
-            </div>
-            <div>Modifiers</div>
-            <div class="stats">
-                <input id="defense-tier-I" class="tier-I" type="text" value="0">
-                <input id="defense-tier-II" class="tier-II" type="text" value="0">
-                <input id="defense-tier-III" class="tier-III" type="text" value="0">
-            </div>
-            <div>Values</div>
-            <div class="preview stats">
-                <span class="tier-I"   id="preview-defense-tier-I">...</span>
-                <span class="tier-II"  id="preview-defense-tier-II">...</span>
-                <span class="tier-III" id="preview-defense-tier-III">...</span>
-            </div>
-        </div>
-        <input type="checkbox" value="movement" id="movement-hide" name="attr-toggle" checked>
-        <div class="stat">
-            <div>Movement:</div>
-            <div class="stat-profile">
-                <select id="movement-profile" data-value="Average">
-                    <option>Exceptional</option>
-                    <option>Very Good</option>
-                    <option>Good</option>
-                    <option>Above Average</option>
-                    <option selected>Average</option>
-                    <option>Below Average</option>
-                    <option>Poor</option>
-                    <option>Very Poor</option>
-                    <option>Custom</option>
-                </select>
-            </div>
-            <div>Modifiers</div>
-            <div class="stats">
-                <input id="movement-tier-I" class="tier-I" type="text" value="0">
-                <input id="movement-tier-II" class="tier-II" type="text" value="0">
-                <input id="movement-tier-III" class="tier-III" type="text" value="0">
-            </div>
-            <div>Values</div>
-            <div class="preview stats">
-                <span class="tier-I"   id="preview-movement-tier-I">...</span>
-                <span class="tier-II"  id="preview-movement-tier-II">...</span>
-                <span class="tier-III" id="preview-movement-tier-III">...</span>
-            </div>
-        </div>
-        <input type="checkbox" value="attack" id="attack-hide" name="attr-toggle" checked>
-        <div class="stat">
-            <div>Attack:<label class="qmark" for="modifiers-help">?</label></div>
-            <div class="stat-profile">
-                <select id="attack-profile" data-value="Average">
-                    <option>Exceptional</option>
-                    <option>Very Good</option>
-                    <option>Good</option>
-                    <option>Above Average</option>
-                    <option selected>Average</option>
-                    <option>Below Average</option>
-                    <option>Poor</option>
-                    <option>Very Poor</option>
-                    <option>Custom</option>
-                </select>
-            </div>
-            <div>Modifiers</div>
-            <div class="stats">
-                <input id="attack-tier-I" class="tier-I" type="text" value="0">
-                <input id="attack-tier-II" class="tier-II" type="text" value="0">
-                <input id="attack-tier-III" class="tier-III" type="text" value="0">
-            </div>
-            <div>Values</div>
-            <div class="preview stats">
-                <span class="tier-I"   id="preview-attack-tier-I">...</span>
-                <span class="tier-II"  id="preview-attack-tier-II">...</span>
-                <span class="tier-III" id="preview-attack-tier-III">...</span>
-            </div>
-        </div>
-        <input type="checkbox" class="hidden" id="modifiers-help" />
-        <div class="help flex-height">
-            <div>Modifiers help</div>
-            <div>
                 <div>
-                    <p>
-                        <span class="code">X</span>
-                        - if a non-custom profile is selected, the value X gets added to the profile baseline. For custom profiles, X becomes the baseline.
-                    </p>
-                    <p>
-                        <span class="code">X+</span>
-                        - as above, but the value gets a + added on the end; for conditional scaling. Works with <span class="code">X-</span> too.
-                    </p>
-                    <p>
-                        <span class="code">' '</span>
-                        - blank is treated as 0.
-                    </p>
+                    <div>Tiers:</div>
+                    <div class="tier">
+                        <input type="checkbox" value="I" id="tier-I-toggle" name="tier-toggle" checked>
+                        <label for="tier-I-toggle">I</label>
+                        <input type="checkbox" value="II" id="tier-II-toggle" name="tier-toggle" checked>
+                        <label for="tier-II-toggle">II</label>
+                        <input type="checkbox" value="III" id="tier-III-toggle" name="tier-toggle" checked>
+                        <label for="tier-III-toggle">III</label>
+                    </div>
+                    <div>Attributes:</div>
+                    <div class="attr">
+                        <input type="checkbox" value="initiative" id="initiative-toggle" name="attr-toggle" checked>
+                        <label for="initiative-toggle" style="display: none;"><img src="svg/item-initiative.svg" alt="" /></label>
+                        <input type="checkbox" value="defense" id="defense-toggle" name="attr-toggle" checked>
+                        <label for="defense-toggle"><img src="svg/item-defense.svg" alt="" /></label>
+                        <input type="checkbox" value="movement" id="movement-toggle" name="attr-toggle" checked>
+                        <label for="movement-toggle"><img src="svg/item-movement.svg" alt="" /></label>
+                        <input type="checkbox" value="attack" id="attack-toggle" name="attr-toggle" checked>
+                        <label for="attack-toggle"><img src="svg/item-attack.svg" alt="" /></label>
+                    </div>
+                    <div>Features</div>
+                    <div class="features">
+                        <div>
+                            <!--<input type="radio" value="on" id="features-simple" name="features-toggle">
+                            <label for="features-simple">Simple</label>-->
+                            <input type="radio" id="features-normal" name="features-toggle" checked>
+                            <label for="features-normal">Normal</label>
+                            <input type="radio" id="features-advanced" name="features-toggle">
+                            <label for="features-advanced">Advanced</label>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div>
-            <div>Type<label class="qmark" for="type-help">?</label></div>
-            <div class="card-type">
-                <select class="tier-I" id="card-type">
-                    <option>Attack</option>
-                    <option>Defense</option>
-                    <option>Skill</option>
-                    <option>Movement</option>
-                    <option>Defense/Skill</option>
-                    <option hidden>Ultimate</option>
-                </select>
-                <select class="tier-II" id="card-type-tier-II">
-                    <option>Attack</option>
-                    <option>Defense</option>
-                    <option>Skill</option>
-                    <option>Movement</option>
-                    <option>Defense/Skill</option>
-                    <option hidden>Ultimate</option>
-                </select>
-                <select class="tier-III" id="card-type-tier-III">
-                    <option>Attack</option>
-                    <option>Defense</option>
-                    <option>Skill</option>
-                    <option>Movement</option>
-                    <option>Defense/Skill</option>
-                    <option hidden>Ultimate</option>
-                </select>
-            </div>
-        </div>
-        <input type="checkbox" class="hidden" id="type-help" />
-        <div class="help flex-height">
-            <div>Subtype help</div>
-            <div>
+                <input type="checkbox" value="initiative" id="initiative-hide" checked>
+                <div class="stat">
+                    <div>Initiative:</div>
+                    <div class="stat-profile">
+                        <select id="initiative-profile" data-value="Average">
+                            <option>Exceptional</option>
+                            <option>Very Good</option>
+                            <option>Good</option>
+                            <option>Above Average</option>
+                            <option selected>Average</option>
+                            <option>Below Average</option>
+                            <option>Poor</option>
+                            <option>Very Poor</option>
+                            <option>Custom</option>
+                        </select>
+                    </div>
+                    <div>Modifiers</div>
+                    <div class="stats">
+                        <input id="initiative-tier-I" class="tier-I" type="text" value="0">
+                        <input id="initiative-tier-II" class="tier-II" type="text" value="0">
+                        <input id="initiative-tier-III" class="tier-III" type="text" value="0">
+                    </div>
+                    <div>Values</div>
+                    <div class="preview stats">
+                        <span class="tier-I"   id="preview-initiative-tier-I">...</span>
+                        <span class="tier-II"  id="preview-initiative-tier-II">...</span>
+                        <span class="tier-III" id="preview-initiative-tier-III">...</span>
+                    </div>
+                </div>
+                <input type="checkbox" value="defense" id="defense-hide" name="attr-toggle" checked>
+                <div class="stat">
+                    <div>Defense:</div>
+                    <div class="stat-profile">
+                        <select id="defense-profile" data-value="Average">
+                            <option>Exceptional</option>
+                            <option>Very Good</option>
+                            <option>Good</option>
+                            <option>Above Average</option>
+                            <option selected>Average</option>
+                            <option>Below Average</option>
+                            <option>Poor</option>
+                            <option>Very Poor</option>
+                            <option>Custom</option>
+                        </select>
+                    </div>
+                    <div>Modifiers</div>
+                    <div class="stats">
+                        <input id="defense-tier-I" class="tier-I" type="text" value="0">
+                        <input id="defense-tier-II" class="tier-II" type="text" value="0">
+                        <input id="defense-tier-III" class="tier-III" type="text" value="0">
+                    </div>
+                    <div>Values</div>
+                    <div class="preview stats">
+                        <span class="tier-I"   id="preview-defense-tier-I">...</span>
+                        <span class="tier-II"  id="preview-defense-tier-II">...</span>
+                        <span class="tier-III" id="preview-defense-tier-III">...</span>
+                    </div>
+                </div>
+                <input type="checkbox" value="movement" id="movement-hide" name="attr-toggle" checked>
+                <div class="stat">
+                    <div>Movement:</div>
+                    <div class="stat-profile">
+                        <select id="movement-profile" data-value="Average">
+                            <option>Exceptional</option>
+                            <option>Very Good</option>
+                            <option>Good</option>
+                            <option>Above Average</option>
+                            <option selected>Average</option>
+                            <option>Below Average</option>
+                            <option>Poor</option>
+                            <option>Very Poor</option>
+                            <option>Custom</option>
+                        </select>
+                    </div>
+                    <div>Modifiers</div>
+                    <div class="stats">
+                        <input id="movement-tier-I" class="tier-I" type="text" value="0">
+                        <input id="movement-tier-II" class="tier-II" type="text" value="0">
+                        <input id="movement-tier-III" class="tier-III" type="text" value="0">
+                    </div>
+                    <div>Values</div>
+                    <div class="preview stats">
+                        <span class="tier-I"   id="preview-movement-tier-I">...</span>
+                        <span class="tier-II"  id="preview-movement-tier-II">...</span>
+                        <span class="tier-III" id="preview-movement-tier-III">...</span>
+                    </div>
+                </div>
+                <input type="checkbox" value="attack" id="attack-hide" name="attr-toggle" checked>
+                <div class="stat">
+                    <div>Attack:<label class="qmark" for="modifiers-help">?</label></div>
+                    <div class="stat-profile">
+                        <select id="attack-profile" data-value="Average">
+                            <option>Exceptional</option>
+                            <option>Very Good</option>
+                            <option>Good</option>
+                            <option>Above Average</option>
+                            <option selected>Average</option>
+                            <option>Below Average</option>
+                            <option>Poor</option>
+                            <option>Very Poor</option>
+                            <option>Custom</option>
+                        </select>
+                    </div>
+                    <div>Modifiers</div>
+                    <div class="stats">
+                        <input id="attack-tier-I" class="tier-I" type="text" value="0">
+                        <input id="attack-tier-II" class="tier-II" type="text" value="0">
+                        <input id="attack-tier-III" class="tier-III" type="text" value="0">
+                    </div>
+                    <div>Values</div>
+                    <div class="preview stats">
+                        <span class="tier-I"   id="preview-attack-tier-I">...</span>
+                        <span class="tier-II"  id="preview-attack-tier-II">...</span>
+                        <span class="tier-III" id="preview-attack-tier-III">...</span>
+                    </div>
+                </div>
+                <input type="checkbox" class="hidden" id="modifiers-help" />
+                <div class="help flex-height">
+                    <div>Modifiers help</div>
+                    <div>
+                        <div>
+                            <p>
+                                <span class="code">X</span>
+                                - if a non-custom profile is selected, the value X gets added to the profile baseline. For custom profiles, X becomes the baseline.
+                            </p>
+                            <p>
+                                <span class="code">X+</span>
+                                - as above, but the value gets a + added on the end; for conditional scaling. Works with <span class="code">X-</span> too.
+                            </p>
+                            <p>
+                                <span class="code">' '</span>
+                                - blank is treated as 0.
+                            </p>
+                        </div>
+                    </div>
+                </div>
                 <div>
-                    <p>
-                        <span class="code">Changing card type</span>
-                        - enabled <span class="code">advanced</span> features to have the card type change across tiers.
-                    </p>
+                    <div>Type<label class="qmark" for="type-help">?</label></div>
+                    <div class="card-type">
+                        <select class="tier-I" id="card-type">
+                            <option>Attack</option>
+                            <option>Defense</option>
+                            <option>Skill</option>
+                            <option>Movement</option>
+                            <option>Defense/Skill</option>
+                            <option hidden>Ultimate</option>
+                        </select>
+                        <select class="tier-II" id="card-type-tier-II">
+                            <option>Attack</option>
+                            <option>Defense</option>
+                            <option>Skill</option>
+                            <option>Movement</option>
+                            <option>Defense/Skill</option>
+                            <option hidden>Ultimate</option>
+                        </select>
+                        <select class="tier-III" id="card-type-tier-III">
+                            <option>Attack</option>
+                            <option>Defense</option>
+                            <option>Skill</option>
+                            <option>Movement</option>
+                            <option>Defense/Skill</option>
+                            <option hidden>Ultimate</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div>
-            <div>Subtype<label class="qmark" for="subtype-help">?</label></div>
-            <div class="subtype">
+                <input type="checkbox" class="hidden" id="type-help" />
+                <div class="help flex-height">
+                    <div>Subtype help</div>
+                    <div>
+                        <div>
+                            <p>
+                                <span class="code">Changing card type</span>
+                                - enabled <span class="code">advanced</span> features to have the card type change across tiers.
+                            </p>
+                        </div>
+                    </div>
+                </div>
                 <div>
-                    <input type="radio" value="none" id="subtype-none" name="subtype" checked />
-                    <label for="subtype-none">
-                        <img src="svg/item-none.svg" alt="" />
-                    </label>
-                    <input type="radio" value="radius" id="subtype-radius" name="subtype" />
-                    <label for="subtype-radius">
-                        <img src="svg/item-radius.svg" alt="" />
-                    </label>
-                    <input type="radio" value="range" id="subtype-range" name="subtype" />
-                    <label for="subtype-range">
-                        <img src="svg/item-range.svg" alt="" />
-                    </label>
+                    <div>Subtype<label class="qmark" for="subtype-help">?</label></div>
+                    <div class="subtype">
+                        <div>
+                            <input type="radio" value="none" id="subtype-none" name="subtype" checked />
+                            <label for="subtype-none">
+                                <img src="svg/item-none.svg" alt="" />
+                            </label>
+                            <input type="radio" value="radius" id="subtype-radius" name="subtype" />
+                            <label for="subtype-radius">
+                                <img src="svg/item-radius.svg" alt="" />
+                            </label>
+                            <input type="radio" value="range" id="subtype-range" name="subtype" />
+                            <label for="subtype-range">
+                                <img src="svg/item-range.svg" alt="" />
+                            </label>
+                        </div>
+                    </div>
+                    <div class="stats">
+                        <input class="tier-I"   type="text" id="subtype-value-tier-I" value="1" disabled>
+                        <input class="tier-II"  type="text" id="subtype-value-tier-II" value="1" disabled>
+                        <input class="tier-III" type="text" id="subtype-value-tier-III" value="1" disabled>
+                    </div>
                 </div>
-            </div>
-            <div class="stats">
-                <input class="tier-I"   type="text" id="subtype-value-tier-I" value="1" disabled>
-                <input class="tier-II"  type="text" id="subtype-value-tier-II" value="1" disabled>
-                <input class="tier-III" type="text" id="subtype-value-tier-III" value="1" disabled>
-            </div>
-        </div>
-        <input type="checkbox" class="hidden" id="subtype-help" />
-        <div class="help flex-height">
-            <div>Subtype help</div>
-            <div>
+                <input type="checkbox" class="hidden" id="subtype-help" />
+                <div class="help flex-height">
+                    <div>Subtype help</div>
+                    <div>
+                        <div>
+                            <p>
+                                <span class="code">' '</span>
+                                - blank is treated as no subtype. Use this if a branch gains a subtype on a later tier.
+                            </p>
+                        </div>
+                    </div>
+                </div>
                 <div>
-                    <p>
-                        <span class="code">' '</span>
-                        - blank is treated as no subtype. Use this if a branch gains a subtype on a later tier.
-                    </p>
+                    <div>Name</div>
+                    <div class="names">
+                        <input class="tier-I"   id="name-tier-I" type="text" value="Tier1 name">
+                        <input class="tier-II"  id="name-tier-II" type="text" value="Tier2 name">
+                        <input class="tier-III" id="name-tier-III" type="text" value="Tier3 name">
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div>
-            <div>Name</div>
-            <div class="names">
-                <input class="tier-I"   id="name-tier-I" type="text" value="Tier1 name">
-                <input class="tier-II"  id="name-tier-II" type="text" value="Tier2 name">
-                <input class="tier-III" id="name-tier-III" type="text" value="Tier3 name">
-            </div>
-        </div>
-        <div class="textbox flex-height">
-            <div>
-                <div>Textbox:</div>
-                <label class="qmark" for="textbox-help">?</label>
-            </div>
-            <div>
-                <textarea id="textbox">Target an enemy unit adjacent to you. After the attack: move {I:1}{II:2}{III:3} space{!I:s} to a space adjacent to the target. **This turn:** You are wild!</textarea>
-            </div>
-            <div class="preview">
-                <p class="tier-I"><b>Tier I:</b> <span id="textbox-tier-I">...</span></p>
-                <p class="tier-II"><b>Tier II:</b> <span id="textbox-tier-II">...</span></p>
-                <p class="tier-III"><b>Tier III:</b> <span id="textbox-tier-III">...</span></p>
-            </div>
-        </div>
-        <input type="checkbox" class="hidden" id="textbox-help" />
-        <div class="help flex-height">
-            <div>Textbox help</div>
-            <div>
+                <div class="textbox flex-height">
+                    <div>
+                        <div>Textbox:</div>
+                        <label class="qmark" for="textbox-help">?</label>
+                    </div>
+                    <div>
+                        <textarea id="textbox">Target an enemy unit adjacent to you. After the attack: move {I:1}{II:2}{III:3} space{!I:s} to a space adjacent to the target. **This turn:** You are wild!</textarea>
+                    </div>
+                </div>
+                <input type="checkbox" class="hidden" id="textbox-help" />
+                <div class="help flex-height">
+                    <div>Textbox help</div>
+                    <div>
+                        <div>
+                            <p>
+                                <span class="code">{I:&lt;...&gt;}</span>
+                                - shows content only on tier I. Works similarly for <span class="code">{II:&lt;...&gt;}</span> and <span class="code">{III:&lt;...&gt;}</span>.
+                            </p>
+                            <p>
+                                <span class="code">{!I:&lt;...&gt;}</span>
+                                - shows content for all tiers except tier I. Works similarly for <span class="code">{!II:&lt;...&gt;}</span> and <span class="code">{!III:&lt;...&gt;}</span>.
+                            </p>
+                            <p><span class="code">{&lt;tier-I text...&gt;/&lt;tier-II text...&gt;/&lt;tier-III text...&gt;}</span> 
+                                - shows each entry only at the indicated tier.
+                            </p>
+                            <p>
+                                <span class="code">{&lt;tier-II text...&gt;/&lt;tier-III text...&gt;}</span> 
+                                - as above, but only for tier II and tier III.
+                            </p>
+                            <p>
+                                <span class="code">**<...>**</span> 
+                                - transforms content to bold text.
+                            </p>
+                            <p>
+                                <span class="code">* <...></span> 
+                                - <span class="code">*</span> become bullets <span class="code">●</span>. Bullets are left-aligned by default.
+                            </p>
+                            <p>
+                                <span class="code">:atk:</span> 
+                                - draw the attack icon. Similarly for <span class="code">:def:</span> (defense), <span class="code">:ini:</span> (initiative), <span class="code">:mov:</span> (movement), <span class="code">:rad:</span> (radius), and <span class="code">:rng:</span> (range).
+                            </p>
+                            <p>
+                                <span class="code">':left/right/center: <...>'</span> 
+                                - Start a line with <span class="code">':left: '</span> to left-align the text. Works similarly for <span class="code">:center:</span> an (not that I think you will ever need it) <span class="code">:right:</span>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
                 <div>
-                    <p>
-                        <span class="code">{I:&lt;...&gt;}</span>
-                        - shows content only on tier I. Works similarly for <span class="code">{II:&lt;...&gt;}</span> and <span class="code">{III:&lt;...&gt;}</span>.
-                    </p>
-                    <p>
-                        <span class="code">{!I:&lt;...&gt;}</span>
-                        - shows content for all tiers except tier I. Works similarly for <span class="code">{!II:&lt;...&gt;}</span> and <span class="code">{!III:&lt;...&gt;}</span>.
-                    </p>
-                    <p><span class="code">{&lt;tier-I text...&gt;/&lt;tier-II text...&gt;/&lt;tier-III text...&gt;}</span> 
-                        - shows each entry only at the indicated tier.
-                    </p>
-                    <p>
-                        <span class="code">{&lt;tier-II text...&gt;/&lt;tier-III text...&gt;}</span> 
-                        - as above, but only for tier II and tier III.
-                    </p>
-                    <p>
-                        <span class="code">**<...>**</span> 
-                        - transforms content to bold text.
-                    </p>
-                    <p>
-                        <span class="code">* <...></span> 
-                        - <span class="code">*</span> become bullets <span class="code">●</span>. Bullets are left-aligned by default.
-                    </p>
-                    <p>
-                        <span class="code">:atk:</span> 
-                        - draw the attack icon. Similarly for <span class="code">:def:</span> (defense), <span class="code">:ini:</span> (initiative), <span class="code">:mov:</span> (movement), <span class="code">:rad:</span> (radius), and <span class="code">:rng:</span> (range).
-                    </p>
-                    <p>
-                        <span class="code">':left/right/center: <...>'</span> 
-                        - Start a line with <span class="code">':left: '</span> to left-align the text. Works similarly for <span class="code">:center:</span> an (not that I think you will ever need it) <span class="code">:right:</span>.
-                    </p>
+                    <div>Item:</div>
+                    <div class="items">
+                        <div class="tier-I">
+                            <img src="svg/item-none.svg" alt="" />
+                        </div>
+                        <div class="tier-II">
+                            <input type="radio" value="attack" id="item-tier-II-attack" name="tier-II-item" checked />
+                            <label for="item-tier-II-attack">
+                                <img src="svg/item-attack.svg" alt="" />
+                            </label>
+                            <input type="radio" value="defense" id="item-tier-II-defense" name="tier-II-item" />
+                            <label for="item-tier-II-defense">
+                                <img src="svg/item-defense.svg" alt="" />
+                            </label>
+                            <input type="radio" value="initiative" id="item-tier-II-initiative" name="tier-II-item" />
+                            <label for="item-tier-II-initiative">
+                                <img src="svg/item-initiative.svg" alt="" />
+                            </label>
+                        </div>
+                        <div class="tier-III">
+                            <input type="radio" value="attack" id="item-tier-III-attack" name="tier-III-item" checked />
+                            <label for="item-tier-III-attack">
+                                <img src="svg/item-attack.svg" alt="" />
+                            </label>
+                            <input type="radio" value="defense" id="item-tier-III-defense" name="tier-III-item" />
+                            <label for="item-tier-III-defense">
+                                <img src="svg/item-defense.svg" alt="" />
+                            </label>
+                            <input type="radio" value="initiative" id="item-tier-III-initiative" name="tier-III-item" />
+                            <label for="item-tier-III-initiative">
+                                <img src="svg/item-initiative.svg" alt="" />
+                            </label>
+                            <input type="radio" value="movement" id="item-tier-III-movement" name="tier-III-item" />
+                            <label for="item-tier-III-movement">
+                                <img src="svg/item-movement.svg" alt="" />
+                            </label>
+                            <input type="radio" value="radius" id="item-tier-III-radius" name="tier-III-item" />
+                            <label for="item-tier-III-radius">
+                                <img src="svg/item-radius.svg" alt="" />
+                            </label>
+                            <input type="radio" value="range" id="item-tier-III-range" name="tier-III-item" />
+                            <label for="item-tier-III-range">
+                                <img src="svg/item-range.svg" alt="" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="debug">
+                    <div>Debug</div>
+                    <div><button id="test-new">New card!</button></div>
+                    <div><button id="test-save">Save!</button></div>
+                    <div><button id="test-load">Load!</button></div>
+                    <div><input type="number" value="0" id="test-load-id" /></div>
+                    <div><button id="test-clear">Clear All</button></div>
+                    <div><button id="test-log">localStorage</button></div>
                 </div>
             </div>
         </div>
-        <div>
-            <div>Item:</div>
-            <div class="items">
-                <div class="tier-I">
-                    <img src="svg/item-none.svg" alt="" />
+        <div class="side-panel">
+            <div class="preview-column">
+                <div class="card-preview">
+                    <canvas id="card" width="630" height="880" style=""></canvas>
+                    <button onclick="saveCanvasAsPNG()"><img src="gui-icons/file-arrow-down-solid.svg" alt="Download"></button>
                 </div>
-                <div class="tier-II">
-                    <input type="radio" value="attack" id="item-tier-II-attack" name="tier-II-item" checked />
-                    <label for="item-tier-II-attack">
-                        <img src="svg/item-attack.svg" alt="" />
-                    </label>
-                    <input type="radio" value="defense" id="item-tier-II-defense" name="tier-II-item" />
-                    <label for="item-tier-II-defense">
-                        <img src="svg/item-defense.svg" alt="" />
-                    </label>
-                    <input type="radio" value="initiative" id="item-tier-II-initiative" name="tier-II-item" />
-                    <label for="item-tier-II-initiative">
-                        <img src="svg/item-initiative.svg" alt="" />
-                    </label>
+                <div class="card-preview-buttons">
+                    <div><img src="gui-icons/eye-solid.svg" alt="Preview"></div>
+                    <div><button class="tier-I"   id="preview-tier-I"   >Tier I</button></div>
+                    <div><button class="tier-II"  id="preview-tier-II"  >Tier II</button></div>
+                    <div><button class="tier-III" id="preview-tier-III" >Tier III</button></div>
                 </div>
-                <div class="tier-III">
-                    <input type="radio" value="attack" id="item-tier-III-attack" name="tier-III-item" checked />
-                    <label for="item-tier-III-attack">
-                        <img src="svg/item-attack.svg" alt="" />
-                    </label>
-                    <input type="radio" value="defense" id="item-tier-III-defense" name="tier-III-item" />
-                    <label for="item-tier-III-defense">
-                        <img src="svg/item-defense.svg" alt="" />
-                    </label>
-                    <input type="radio" value="initiative" id="item-tier-III-initiative" name="tier-III-item" />
-                    <label for="item-tier-III-initiative">
-                        <img src="svg/item-initiative.svg" alt="" />
-                    </label>
-                    <input type="radio" value="movement" id="item-tier-III-movement" name="tier-III-item" />
-                    <label for="item-tier-III-movement">
-                        <img src="svg/item-movement.svg" alt="" />
-                    </label>
-                    <input type="radio" value="radius" id="item-tier-III-radius" name="tier-III-item" />
-                    <label for="item-tier-III-radius">
-                        <img src="svg/item-radius.svg" alt="" />
-                    </label>
-                    <input type="radio" value="range" id="item-tier-III-range" name="tier-III-item" />
-                    <label for="item-tier-III-range">
-                        <img src="svg/item-range.svg" alt="" />
-                    </label>
+                <div class="textbox-preview">
+                    <div class="preview">
+                        <p class="tier-I"><b>Tier I:</b> <span id="textbox-tier-I">...</span></p>
+                        <p class="tier-II"><b>Tier II:</b> <span id="textbox-tier-II">...</span></p>
+                        <p class="tier-III"><b>Tier III:</b> <span id="textbox-tier-III">...</span></p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="card-preview">
-            <div>Preview</div>
-            <div><button class="tier-I" onclick="toTMP(0)" style="width: 100px; height: 100%;">Tier I</button></div>
-            <div><button class="tier-II" onclick="toTMP(1)" style="width: 100px; height: 100%;">Tier II</button></div>
-            <div><button class="tier-III" onclick="toTMP(2)" style="width: 100px; height: 100%;">Tier III</button></div>
         </div>
     </div>
-    <script>
-        const container = document.getElementsByClassName("container");
+    <script type="module">
+        import { asset_loader, render } from "./modules/card-render.js";
+        import { card as demo_card } from "./modules/demoCards.js";
+        import * as editor from "./modules/editor.js";
+        import * as storage from "./modules/storage.js";
+
+        window.addEventListener('DOMContentLoaded',function () {
+            var canvas = document.getElementById("card");
+            var ctx = canvas.getContext("2d");
+            
+            document.addEventListener('gfx ready', function(e) {
+                render(ctx, canvas, demo_card);
+            });
+            const gfxLoadedEvent = new Event("gfx ready");
+            
+            if (localStorage.getItem('workspace') != null) {
+                editor.set_branch(storage.loadWorkSpace());
+            }
+            editor.guiUpdate();
+
+            asset_loader(function() { 
+                //document.dispatchEvent(gfxLoadedEvent); 
+                document.getElementById("preview-tier-I").click();
+            });
+        });
+
+        function valueChange() {
+            storage.saveWorkSpace(editor.get_branch());
+        }
+
+        function drawCard(tier = '') {
+            if (tier == '') tier = currentTier;
+            let branch = editor.get_branch();
+            let card = editor.getCard(branch, tier);
+            render(ctx, canvas, card);
+        }
+
+        function guiUpdate() {
+            editor.guiUpdate();
+            valueChange();
+            drawCard();
+        }
+
+        // ============================================================================
+        // ============================================================================
+        // TESTING CODE
+        document.getElementById("test-new").addEventListener("click", function (e) {
+            editor.input_card_id.value = "";
+        });
+
+        document.getElementById("test-save").addEventListener("click", function (e) {
+            let branch = editor.get_branch();
+            console.log(branch);
+            storage.save(branch);
+        });
+        
+        document.getElementById("test-load").addEventListener("click", function (e) {
+            let val = parseInt(document.getElementById('test-load-id').value);
+            console.log(val);
+            let branch = storage.getBranches()[val];
+            console.log(branch);
+            if (branch != null)
+            editor.set_branch(storage.getBranch(branch));
+            guiUpdate();
+        });
+        
+        document.getElementById("test-clear").addEventListener("click", function (e) {
+            localStorage.clear();
+        });
+        document.getElementById("test-log").addEventListener("click", function (e) {
+            console.log(localStorage);
+        });
+        // ============================================================================
+        // ============================================================================
+
+        var currentTier = 'I';
+        const canvas = document.getElementById("card");
+        const ctx = canvas.getContext("2d");
+        ['I','II','III'].forEach(function (tier, i) {
+            document.getElementById("preview-tier-"+tier)
+                .addEventListener("click", function (e) {
+                    currentTier = tier;
+                    drawCard(tier);
+            });
+        });
+
+        
+    
         const select_supertype = document.getElementById("supertype");
         const select_stat_type = document.getElementById("stat-type");
         const select_card_color = document.getElementById("card-color");
@@ -807,393 +549,33 @@
         const input_tier_ii_item = document.getElementsByName("tier-II-item");
         const input_tier_iii_item = document.getElementsByName("tier-III-item");
 
-        var tmp = {}; // debug
-        function toTMP(tier) {
-            tmp = {};
-            tmp['statType'] = select_stat_type.value.toLowerCase();
-            tmp['statProfile'] = {};
-            ['initiative', 'attack', 'defense', 'movement'].forEach(function (stat) {
-                tmp['statProfile'][stat] = select_stat_profile(stat).value.toLowerCase();
-            });
-            tmp['color'] = select_card_color.value.toLowerCase();
-            tmp['supertype'] = select_supertype.value.toLowerCase();
-            tmp['tier'] = [
-                input_tier_toggle[0].checked,
-                input_tier_toggle[1].checked,
-                input_tier_toggle[2].checked
-            ];
-            ['initiative', 'attack', 'defense', 'movement'].forEach(function(stat) {
-                let check = document.getElementById(stat + "-toggle").checked;
-                if (check) {
-                    tmp[stat] = [
-                        document.getElementById('preview-' + stat + '-tier-I').innerText,
-                        document.getElementById('preview-' + stat + '-tier-II').innerText,
-                        document.getElementById('preview-' + stat + '-tier-III').innerText
-                    ];
-                    for (var i = 0; i < 3; i++) {
-                        tmp[stat][i] = tmp[stat][i] == '-' ? '' : tmp[stat][i];
-                    }
-                }
-            });
-            tmp['type'] = select_type.value.toLowerCase();
-            if (tmp['type'] == "defense/skill")
-                tmp['type'] = "defenseSkill";
-            if (document.getElementById("features-advanced").checked) {
-                tmp['type'] = [
-                    tmp['type'],
-                    select_type_tier_ii.value.toLowerCase(),
-                    select_type_tier_iii.value.toLowerCase()
-                ];
-                if (tmp['type'][1] == "defense/skill")
-                    tmp['type'][1] = "defenseSkill";
-                if (tmp['type'][2] == "defense/skill")
-                    tmp['type'][2] = "defenseSkill";
-            }
-
-            tmp['subtype'] = 'none';
-            ['radius', 'range'].forEach(function (subtype) {
-                let check = document.getElementById('subtype-' + subtype).checked;
-                tmp['subtype'] = check ? subtype : tmp['subtype'];
-            });
-            tmp['subtypevalue'] = [
-                document.getElementById('subtype-value-tier-I').value,
-                document.getElementById('subtype-value-tier-II').value,
-                document.getElementById('subtype-value-tier-III').value
-            ];
-            tmp['name'] = [
-                document.getElementById('name-tier-I').value,
-                document.getElementById('name-tier-II').value,
-                document.getElementById('name-tier-III').value
-            ];
-            tmp['text'] = document.getElementById('textbox').value;
-            tmp['item'] = ["","",""];
-            input_tier_ii_item.forEach(function (e) {
-                tmp['item'][1] = e.checked ? e.value.toLowerCase() : tmp['item'][1];
-            });
-            input_tier_iii_item.forEach(function (e) {
-                tmp['item'][2] = e.checked ? e.value.toLowerCase() : tmp['item'][2];
-            });
-
-            
-            card2 = getCard(tmp, tier);
-            render(card2);
-        }
-
-        function getCard(branch, tier) {
-            let card = {};
-            card['color'] = branch['color'];
-            card['supertype'] = branch['supertype'];
-            card['tier'] = "";
-            if (branch['supertype'] == "ultimate") {
-                card['tier'] = "IV";
-            } else if (branch['supertype'] == "nonbasic") {
-                card['tier'] = "I".repeat(tier+1);
-            }
-            if (typeof(branch['type']) == "object") {
-                card['type'] = branch['type'][tier];
-            } else {
-                card['type'] = branch['type'];
-            }
-            card['subtype'] = branch['subtype'];
-            card['subtypevalue'] = branch['subtype'] != "none" ? branch['subtypevalue'] : "";
-            if (typeof(card['subtypevalue'] == 'object')) {
-                card['subtypevalue'] = card['subtypevalue'][tier];
-            }
-            ['initiative', 'attack', 'defense', 'movement', 'name', 'item'].forEach(function (stat) {
-                if (Object.keys(branch).indexOf(stat) > -1) {
-                    if (typeof(branch[stat]) == 'object') {
-                        card[stat] = branch[stat][tier];
-                    } else {
-                        card[stat] = branch[stat];
-                    }
-                    if (card[stat] == '') {
-                        delete card[stat];
-                    }
-                }
-            });
-            tier_str = 'I'.repeat(tier+1);
-            card['text'] = textbox_parser(branch['text'], tier_str, false);
-            return card;
-        }
-
-        function get_feature_level() {
-            const normal = document.getElementById("features-normal").checked;
-            if (normal) return "normal";
-            const advanced = document.getElementById("features-advanced").checked;
-            if (advanced) return "advanced";
-        }
-
-        function update_gui() {
-            const supertype = select_supertype.value.toLowerCase();
-            var color = select_card_color.value.toLowerCase();
-            const feat = get_feature_level();
-            const color_opts = select_card_color.children;
-            const type_opts = select_type.children;
-
-            let event = new Event("change");
-
-            // Reset card type visibility;
-            if (select_type.value == "Ultimate")
-                select_type.value = "Attack";
-            for (var i = 0; i < type_opts.length; i++) {
-                if (type_opts[i].value == 'Ultimate')
-                    type_opts[i].hidden = true;
-                else
-                    type_opts[i].hidden = false;
-            }
-
-            // Changing card type UI
-            ['II', 'III'].forEach(function (tier) {
-                const e = document.getElementById("card-type-tier-" + tier);
-                let disp = "none"; //feat == "advanced" ? "block" : "none";
-                e.style.display = feat == "advanced" ? "block" : "none";
-            });
-
-            switch (supertype) {
-                case 'nonbasic':
-                    for (var i = 0; i < color_opts.length; i++) {
-                        let val = color_opts[i].value.toLowerCase();
-                        if (['red','blue','green'].indexOf(val) > -1) {
-                            color_opts[i].hidden = false;
-                        } else if (feat == "advanced" && val == "custom") {
-                            color_opts[i].hidden = false;
-                        } else {
-                            if (select_card_color.value.toLowerCase() == val) {
-                                color = 'red';
-                                select_card_color.value = color[0].toUpperCase() + color.slice(1);
-                                select_card_color.dispatchEvent(event);
-                            }
-                            color_opts[i].hidden = true;
-                        }
-                    }
-                    input_tier_toggle.forEach(function (ee) {
-                        ee.checked = true;
-                        ee.dispatchEvent(event);
-                    });
-                    ['attack','defense','movement','initiative'].forEach(function (stat) {
-                        let ee = document.getElementById(stat + "-toggle");
-                        ee.checked = true;
-                        if (feat == "normal")
-                            if (stat == "attack" && color != "red")
-                                ee.checked = false;
-                        ee.dispatchEvent(event);
-                        if (stat == 'initiative') {
-                            ee.nextElementSibling.style.display = "none";
-                        }
-                    });
-                    if (feat == "normal" && color != "red") {
-                        if (select_type.value == 'Attack')
-                            select_type.value = 'Skill';
-                        for (var i = 0; i < type_opts.length; i++) {
-                            if (['attack','ultimate'].indexOf(type_opts[i].value.toLowerCase()) > -1)
-                                type_opts[i].hidden = true;
-                            else
-                                type_opts[i].hidden = false;
-                        }
-                    }
-                    break;
-
-                case 'basic':
-                    for (var i = 0; i < color_opts.length; i++) {
-                        let val = color_opts[i].value.toLowerCase();
-                        if (['silver','gold'].indexOf(val) > -1) {
-                            color_opts[i].hidden = false;
-                        } else if (feat == "advanced" && val == "custom") {
-                            color_opts[i].hidden = false;
-                        } else {
-                            if (select_card_color.value.toLowerCase() == val) {
-                                color = 'gold';
-                                select_card_color.value = color[0].toUpperCase() + color.slice(1);
-                                select_card_color.dispatchEvent(event);
-                            }
-                            color_opts[i].hidden = true;
-                        }
-                    }
-                    input_tier_toggle.forEach(function (ee, i) {
-                        ee.checked = i == 0;
-                        ee.dispatchEvent(event);
-                    });
-                    ['attack','defense','movement','initiative'].forEach(function (stat) {
-                        let ee = document.getElementById(stat + "-toggle");
-                        ee.checked = true;
-                        if (feat == "normal") {
-                            if (color == "silver") {
-                                if (stat == "attack" || stat == "movement")
-                                    ee.checked = false;
-                            }
-                        }
-                        ee.dispatchEvent(event);
-                        if (stat == 'initiative') {
-                            ee.nextElementSibling.style.display = "none";
-                        }
-                    });
-                    if (feat == "normal" && color == "silver") {
-                        if (select_type.value == 'Attack')
-                            select_type.value = 'Skill';
-                        for (var i = 0; i < type_opts.length; i++) {
-                            if (type_opts[i].value == 'Attack' || type_opts[i] == "Movement")
-                                type_opts[i].hidden = true;
-                            else
-                                type_opts[i].hidden = false;
-                        }
-                    }
-                    break;
-
-                case 'ultimate':
-                    for (var i = 0; i < color_opts.length; i++) {
-                        let val = color_opts[i].value.toLowerCase();
-                        if (['purple'].indexOf(val) > -1) {
-                            color_opts[i].hidden = false;
-                        } else if (feat == "advanced" && val == "custom") {
-                            color_opts[i].hidden = false;
-                        } else {
-                            if (select_card_color.value.toLowerCase() == val) {
-                                color = 'purple';
-                                select_card_color.value = color[0].toUpperCase() + color.slice(1);
-                                select_card_color.dispatchEvent(event);
-                            }
-                            color_opts[i].hidden = true;
-                        }
-                    }
-                    input_tier_toggle.forEach(function (ee, i) {
-                        ee.checked = i == 0;
-                        ee.dispatchEvent(event);
-                    });
-                    ['attack','defense','movement','initiative'].forEach(function (stat) {
-                        let ee = document.getElementById(stat + "-toggle");
-                        ee.checked = false;
-                        ee.dispatchEvent(event);
-                        if (stat == 'initiative') {
-                            ee.nextElementSibling.style.display = feat == "advanced" ? "block" : "none";
-                        }
-                    });
-                    select_type.value = 'Ultimate';
-                    if (feat == "normal") {
-                        for (var i = 0; i < type_opts.length; i++) {
-                            if (type_opts[i].value != 'Ultimate')
-                                type_opts[i].hidden = true;
-                            else
-                                type_opts[i].hidden = false;
-                        }
-                    } else {
-                        for (var i = 0; i < type_opts.length; i++) {
-                            if (type_opts[i].value == 'Ultimate')
-                                type_opts[i].hidden = false;
-                        }
-                    }
-                    break;
-            }
-        }
-
-        select_supertype.addEventListener("change", function (e) {
-            update_gui();
-        });
+        editor.select_supertype.addEventListener("change", function (e) { guiUpdate(); });
+        select_card_color.addEventListener("change", function (e) { guiUpdate(); });
+        select_type.addEventListener("change", function (e) { guiUpdate(); });
 
         input_features_toggle.forEach(function (e) {
-            e.addEventListener("change", function (ee) { update_gui(); });
-        });
+            e.addEventListener("change", function (ee) { guiUpdate(); });
+        });        
 
-
-        function update_stat(stat) {
-            stat = stat.toLowerCase();
-            if (stat == "all") {
-                update_stat("attack");
-                update_stat("defense");
-                update_stat("movement");
-                update_stat("initiative");
-                return;
-            }
-            const stat_profile = select_stat_profile(stat);
-
-            let val = [0, 0, 0];
-            
-            const stattype = select_stat_type.value;
-            const cardcolor = select_card_color.value;
-            const profile = stat_profile.value;
-
-            //if (profile == "Custom") {
-            if (stattype == "Custom") {
-                for (var i = 0; i < val.length; i++)
-                    val[i] = input_stats(stat)[i].value;
-            } else if (stattype == "Profile") {
-                if (profile != "Custom")
-                    val = get_stat(stat, profile, cardcolor);
-                if (typeof(val) == "number") {
-                    val = [val, val, val];
-                }
-                for (var i = 0; i < val.length; i++) {
-                    let modval = input_stats(stat)[i].value;
-                    if (modval == '!') {
-                        val[i] = modval;
-                        continue;
-                    }
-                    let mod_pm = modval.slice(-1) == '+' ? '+' : '';
-                    mod_pm = modval.slice(-1) == '-' ? '-' : mod_pm;
-                    modval = mod_pm.length > 0 ? modval.slice(0, -1) : modval;
-                    modval = modval == '' ? '0' : modval;
-                    val[i] += parseInt(modval);
-                    val[i] = val[i] < 0 ? '-' : val[i] + mod_pm;
-                }
-            }
-            //}
-            
-            ['I','II','III'].forEach(function(tier) {
-                const elem = document.getElementById("preview-" + stat + "-tier-" + tier);
-                const idx = tier.length - 1;
-                elem.innerHTML = val[idx];
-            });
-        }
-
-        select_stat_type.addEventListener("change", function (e) { update_stat("All"); });
-        select_card_color.addEventListener("change", function (e) { 
-            update_stat("All"); 
-            update_gui();
-
-            // Default colors
-            var color_fg = 'teal';
-            var color_bg = 'lightblue';
-            var color_on = 'lightsalmon';
-            var color_fg_off = 'lightgray';
-            var color_bg_off = 'whitesmoke';
-
-            const color_str = e.target.value.toLowerCase();
-            if (Object.keys(cardColors).indexOf(color_str) >= 0) {
-                color_fg = cardColors[color_str];
-                var color_rgb = hexToRgb(color_fg);
-                var alpha = .875;
-                Object.keys(color_rgb).forEach(function (k) {
-                    color_rgb[k] = parseInt(color_rgb[k] + alpha * (255 - color_rgb[k]));
-                });
-                color_bg = rgbToHex(color_rgb['r'], color_rgb['g'], color_rgb['b']);
-                if (color_str == "silver") {
-                    color_fg_off = color_bg;
-                    color_bg_off = color_fg;
-                }
-            }
-
-            container[0].style.setProperty('--fg-color', color_fg);
-            container[0].style.setProperty('--bg-color', color_bg);
-            container[0].style.setProperty('--on-color', color_on);
-            container[0].style.setProperty('--off-bg-color', color_bg_off);
-            container[0].style.setProperty('--off-fg-color', color_fg_off);
-            
-        });
         ['attack','defense','movement','initiative'].forEach(function (stat) {
-            select_stat_profile(stat).addEventListener("change", function (e) { 
-                update_stat(stat); 
+            select_stat_profile(stat).addEventListener("change", function (e) {
                 if (select_stat_type.value == "Profile") {
                     e.target.dataset.value = e.target.value;
                 }
+                guiUpdate(); 
             });
             
             input_stats(stat).forEach(function (e) {
-                e.addEventListener("change", function (v) { update_stat(stat); });
+                e.addEventListener("change", function (v) { 
+                    guiUpdate(); 
+                });
             });
 
             // Attribute hiding
             document.getElementById(stat + "-toggle").addEventListener("change", function (e) {
                 const checked = e.target.checked;
                 document.getElementById(stat +"-hide").checked = checked;
+
                 const opts = select_type.children;
                 for (var i = 0; i < opts.length; i++) {
                     const opt = opts[i].value.toLowerCase();
@@ -1204,6 +586,7 @@
                         opts[i].hidden = checked ? false : true;
                     }
                 }
+                valueChange(); // guiUpdate here would cause infinite recursion
             });
         });
 
@@ -1222,7 +605,7 @@
                     ee.value = ee.dataset.value;
                 }
             }
-            update_stat('All');
+            guiUpdate(); 
         });
 
         input_tier_toggle.forEach(function (e) {
@@ -1232,7 +615,7 @@
                 const elem_list = document.getElementsByClassName("tier-" + tier);
                 for (var i = 0; i < elem_list.length; i++) {
                     const ee = elem_list[i];
-                    if (ee.tagName == "INPUT" || ee.tagName == "SELECT") {
+                    if (ee.tagName == "INPUT" || ee.tagName == "SELECT" || ee.tagName == "BUTTON") {
 
                         // Deal with subtype-value boxes
                         if (ee.id.slice(0, 18) == "subtype-value-tier") {
@@ -1252,41 +635,7 @@
                         ee.style.display = check ? "block" : "none";
                     }
                 }
-            });
-        });
-
-        function textbox_parser(str, tier, html = true) {
-            var tiers = ['I','II','III'];
-            const idx = tier.length - 1;
-            tiers[idx] = '!' + tiers[idx]; 
-
-            const rem = new RegExp('{(' + tiers.join('|') + '):[^}]*}', 'g');
-            const all = /{([^}/]*)\/([^}/]*)\/([^}/]*)}/g;
-            const all_variant = /{([^}/]*)\/([^}/]*)}/g;
-            const keep = /{!?(I|II|III):([^}]*)}/g;
-            const bold = /\*\*([^*]*)\*\*/g;
-            const bullet = /(?<!\*)(\*)\s/g;
-            const dash = /(\-)/g;
-            const newline = /(\n)/g;
-
-            str = str.replace(rem, '');
-            str = str.replace(all, '$' + (idx+1));
-            str = str.replace(all_variant, idx > 0 ? '$' + idx : '');
-            str = str.replace(keep, '$2');
-            if (html) str = str.replace(bold, '<b>$1</b>');
-            str = str.replace(bullet, '● ');
-            str = str.replace(dash, '—');
-            if (html) 
-                str = str.replace(newline, '<br />');
-            return str.trim();
-        }
-
-
-        input_textbox.addEventListener("input", function (e) {
-            const text = e.srcElement.value;
-            ['I','II','III'].forEach(function(tier) {
-                const elem = document.getElementById("textbox-tier-" + tier);
-                elem.innerHTML = textbox_parser(text, tier);
+                valueChange(); // guiUpdate here would cause infinite recursion
             });
         });
 
@@ -1308,7 +657,33 @@
                             elem.disabled = false;
                     }
                 });
+                guiUpdate(); 
             });
+        });
+
+        editor.input_subtype_value.forEach(function (e, i) {
+            e.addEventListener("change", function (ee) {
+                currentTier = 'I'.repeat(i+1);
+                guiUpdate();
+            });
+        });
+
+        editor.input_name.forEach(function (e, i) {
+            e.addEventListener("change", function (ee) {
+                currentTier = 'I'.repeat(i+1);
+                guiUpdate();
+            });
+        });
+
+        input_textbox.addEventListener("input", function (e) {
+            const text = e.srcElement.value;
+            ['I','II','III'].forEach(function(tier) {
+                const elem = document.getElementById("textbox-tier-" + tier);
+                elem.innerHTML = editor.textbox_parser(text, tier);
+            });
+        });
+        input_textbox.addEventListener("change", function (e) {
+            guiUpdate();
         });
 
         input_tier_ii_item.forEach(function (e) {
@@ -1320,6 +695,8 @@
                         }
                     });
                 }
+                currentTier = 'II';
+                guiUpdate(); 
             });
         });
 
@@ -1332,61 +709,34 @@
                         }
                     });
                 }
+                currentTier = 'III';
+                guiUpdate(); 
             });
         });
 
         // DEMO STUFF
         var event_input = new Event('input');
-        var event_change = new Event('change');
         input_textbox.dispatchEvent(event_input);
+        /*var event_change = new Event('change');
         input_tier_toggle[0].toggleAttribute("checked");
         input_tier_toggle[0].dispatchEvent(event_change);
-        update_stat('All');
-        update_gui();
+        editor.guiUpdateStat('All');*/
 
+        function saveCanvasAsPNG() {
+            // Get the canvas element and its context
+            var canvas = document.getElementById("card");
+            var ctx = canvas.getContext("2d");
 
-        // Make the DIV element draggable:
-        dragElement(document.getElementById("mydiv"));
+            // Convert the canvas content to a data URL
+            var dataURL = canvas.toDataURL("image/png");
 
-        function dragElement(elmnt) {
-        var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-        if (document.getElementById(elmnt.id + "header")) {
-            // if present, the header is where you move the DIV from:
-            document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
-        } else {
-            // otherwise, move the DIV from anywhere inside the DIV:
-            elmnt.onmousedown = dragMouseDown;
-        }
+            // Create a link element
+            var link = document.createElement("a");
+            link.href = dataURL;
+            link.download = "card.png"; // Set the file name
 
-        function dragMouseDown(e) {
-            e = e || window.event;
-            e.preventDefault();
-            // get the mouse cursor position at startup:
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            document.onmouseup = closeDragElement;
-            // call a function whenever the cursor moves:
-            document.onmousemove = elementDrag;
-        }
-
-        function elementDrag(e) {
-            e = e || window.event;
-            e.preventDefault();
-            // calculate the new cursor position:
-            pos1 = pos3 - e.clientX;
-            pos2 = pos4 - e.clientY;
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            // set the element's new position:
-            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-        }
-
-        function closeDragElement() {
-            // stop moving when mouse button is released:
-            document.onmouseup = null;
-            document.onmousemove = null;
-        }
+            // Simulate a click on the link to trigger the download
+            link.click();
         }
     </script>
 </body>

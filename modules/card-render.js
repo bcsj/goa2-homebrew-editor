@@ -1,14 +1,10 @@
-
-var canvas;
-var ctx;
+import { color_map, card_settings, layout } from "./constants.js";
+import drawColored from "./drawColored.js";
 
 var gfx = {};
 
-const gfxLoadedEvent = new Event("gfx ready");
-
-function loadGFX() {
+export function asset_loader(callback) {
     var load = {
-        gear: "svg/gear.svg",
         initiative: "icons/initiative.png",
         attack: "icons/attack.png",
         defense: "icons/defense.png",
@@ -23,7 +19,9 @@ function loadGFX() {
         'item-attack': "svg/item-attack.svg",
         'item-defense': "svg/item-defense.svg",
         'item-initiative': "svg/item-initiative.svg",
-        art: "OIG._sU2.jpeg",
+        gear: "svg/gear.svg",
+        //art: "img/OIG._sU2.jpeg",
+        art: "img/_42b87fb7-037f-43f3-80dc-0576c8874d49.jpeg",
     };
     var nAssets = Object.keys(load).length;
 
@@ -34,67 +32,26 @@ function loadGFX() {
         gfx[img].onload = function () {
             // Run render() when last asset loads
             if (++nAssetsLoaded == nAssets) {
-                document.dispatchEvent(gfxLoadedEvent);
+                //document.dispatchEvent(gfxLoadedEvent);
+                callback();
             }
         }
     }
 }
 
-var colorMap = {
-    textbox: {
-        bg: "#ccd2cd",
-        border: "#616563"
-    },
-    banner: {
-        border: "#616563" //["#464646", "#9a9a9a"]
-    },
-    namebox: {
-        bg: "#cbc8bc",
-        border: ["#464646", "#9a9a9a"]
-    },
-    background: {
-        bg: "#2e2e2e",
-        border: "#adadad"
-    },
-    readability: {
-        bg: "#828282",
-        border: "#202020"
-    },
-    red: "#c51a0d",
-    blue: "#395acc", //"#1b3eb6",
-    green: "#64b637",
-    gold: "#d4aa14",
-    silver: "#aaaaaa",
-    purple: "#8148ae"
-};
-
-var font = "ModestoPosterW05-Regular";
-var textFont = "Arial";
-
-function clearCanvas(ctx, canvas) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-window.addEventListener('DOMContentLoaded',function () {
-    canvas = document.getElementById("card");
-    ctx = canvas.getContext("2d");
-    document.addEventListener('gfx ready', function(e) {
-        render(card);
-    });
-    loadGFX();
-});
-
-function render(card) {
+export function render(ctx, canvas, card) {
     console.log("Running render!");
-    var color = colorMap[card.color] + "ff";
+    var color = color_map[card.color] + "ff";
 
-    var bleed = card_setting.canvas.bleed;
+    // BLEED SETTINGS
+    var bleed = card_settings.canvas.bleed;
     canvas.width = layout.canvas.width + 2*bleed;
     canvas.height = layout.canvas.height + 2*bleed;
     ctx.save();
     ctx.translate(bleed, bleed);
 
-    clearCanvas(ctx, canvas);
+    // CLEAR CANVAS
+    clear_canvas(ctx, canvas);
 
     render_art(ctx);
     render_bg_upper(ctx, bleed);
@@ -113,48 +70,59 @@ function render(card) {
     render_readability(ctx, card);
     render_tier(ctx, card);
 
-    render_text(ctx, card, color);
+    render_textbox(ctx, card, color);
     ctx.restore();
 }
 
 function render_art(ctx) {
     var x = 0;
     var y = 0;
-    var shiftX = 200;
+    /*var shiftX = 200;
     var shiftY = -0;
-    var scale = 1.00;
+    var scale = 1.00;*/
+    var shiftX = 25;
+    var shiftY = -70;
+    var scale = 0.80;
+
 
     ctx.drawImage(gfx.art, x-shiftX, y-shiftY, scale*gfx.art.width, scale*gfx.art.height);
 }
 
+//=============================================================
+// CLEAR THE CANVAS
+function clear_canvas(ctx, canvas) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+//=============================================================
+// DRAW SUBTYPE
 function render_subtype(ctx, y, subtype, value, color) {
     var sz, x, imgsz;
-    sz = 115;
+    sz = layout.subtype.size;
     if (subtype == "range") {
-        imgsz = sz;
-        x = 630 - sz - 17;
-        y -= 92;
-        shiftImgY = 2;
+        imgsz = layout.subtype.range.size;
+        x = layout.canvas.width - sz - layout.subtype.range.shift_x;
+        y -= layout.subtype.range.shift_y;
+        shiftImgY = layout.subtype.range.shift_img_y;
     } else if (subtype == "radius") {
-        imgsz = sz + 15;
-        x = 630 - sz - 23;
-        y -= 92;
-        shiftImgY = 10;
+        imgsz = layout.subtype.radius.size;
+        x = layout.canvas.width - sz - layout.subtype.radius.shift_x;
+        y -= layout.subtype.radius.shift_y;
+        var shiftImgY = layout.subtype.radius.shift_img_y;
     } else {
         return;
     }
-    var strokesize = 8;
 
-    ctx.font = "80px " + font;
+    ctx.font = layout.subtype.text.font;
     // Draw icon
     drawColored(ctx, gfx[subtype], x, y + shiftImgY, imgsz, imgsz, color);
     
     // Write value
-    textMeas = ctx.measureText(value);
+    var textMeas = ctx.measureText(value);
 
-    ctx.fillStyle = "white";
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = strokesize;
+    ctx.fillStyle = layout.subtype.text.color;
+    ctx.strokeStyle = layout.subtype.text.stroke;
+    ctx.lineWidth = layout.subtype.text.strokesize;
     x += imgsz/2 - textMeas.width/2;
     y += sz/2 + textMeas.actualBoundingBoxAscent/2;
     ctx.strokeText(value, x, y);
@@ -162,23 +130,24 @@ function render_subtype(ctx, y, subtype, value, color) {
 
 }
 
+//=============================================================
+// DRAW PRIMARY
 function render_primary(ctx, y, type, value, color) {
-    var x = 17;
-    var sz = 115;
+    var x = layout.primary.x;
+    var sz = layout.primary.size;
     y -= 16*sz/20;
-    var strokesize = 8;
 
-    ctx.font = "80px " + font;;
+    ctx.font = layout.primary.text.font;
     // Draw icon
     drawColored(ctx, gfx[type], x, y, sz, sz, color);
     
     if (type != "skill") {
         // Write value
-        textMeas = ctx.measureText(value);
+        var textMeas = ctx.measureText(value);
     
-        ctx.fillStyle = "white";
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = strokesize;
+        ctx.fillStyle = layout.primary.text.color;
+        ctx.strokeStyle = layout.primary.text.stroke;
+        ctx.lineWidth = layout.primary.text.strokesize;
         x += sz/2 - textMeas.width/2;
         y += sz/2 + textMeas.actualBoundingBoxAscent/2;
         ctx.strokeText(value, x, y);
@@ -186,51 +155,15 @@ function render_primary(ctx, y, type, value, color) {
     }
 }
 
-// ===================================================================
-// SETTINGS - NEEDS TO BE MOVED ELSEWHERE
-var card_setting = {
-    canvas: {
-        bleed: 0
-    },
-    textbox: {
-        space: 6.5,
-        line_height: 34,
-        padding: {
-            top: 15,
-            bottom: 15,
-            left: 15,
-            right: 15
-        },
-        width: 550,
-        text: {
-            font: "26px Arial",
-            color: "black"
-        }
-    }
-};
-
-// LAYOUT CONSTANTS
-const layout = {
-    canvas: {
-        height: 880,
-        width: 630
-    },
-    textbox: {
-        minPad: 10,
-        mid: 315,
-        bottom: 775,
-        item_shift: 55,
-    },
-};
-// ===================================================================
-
-function render_text(ctx, card, color) {
+//=============================================================
+// TEXTBOX RENDERER
+function render_textbox(ctx, card, color) {
     var text = card.text;
     var item = "";
     if (card.hasOwnProperty('item')) {
         item = card.item;
     }
-    var settings = card_setting.textbox;
+    var settings = card_settings.textbox;
 
     var textBoxBottom = layout.textbox.bottom;
     textBoxBottom += (item == "") ? layout.textbox.item_shift : 0;
@@ -251,20 +184,22 @@ function render_text(ctx, card, color) {
     var botPad = minPad + settings.padding.bottom;
     var nlines = lineWords.length;
     var height = nlines * settings.line_height + topPad + botPad;
-    render_textbox(ctx, card, color, textBoxBottom, height);
+    render_frame(ctx, card, color, textBoxBottom, height);
     
     // Fill in the text
     ctx.font = settings.text.font;
     ctx.fillStyle = settings.text.color;
-    var x = layout.textbox.mid;
+    var x = layout.canvas.width/2;
     var y = textBoxBottom - height + topPad + minPad + settings.line_height/2;
-    process_fillTextBox(ctx, x, y, wordWidths, lineWidth, lineWords, alignment, boldWords, textArr, color, settings);
+    process_print_text(ctx, x, y, wordWidths, lineWidth, lineWords, alignment, boldWords, textArr, color, settings);
 
     // Render item
     render_item(ctx, item);
 }
 
-function process_fillTextBox(ctx, x, y,
+//-------------------------------------------
+// PRINT THE TEXT
+function process_print_text(ctx, x, y,
         wordWidths, lineWidth, 
         lineWords, alignment,
         boldWords, textArr,
@@ -275,10 +210,10 @@ function process_fillTextBox(ctx, x, y,
     const font = ctx.font.replace('bold','').trim();
     const nlines = lineWidth.length;
     const symbols = [':atk:',':def:',':ini:',':mov:',':rad:',':rng:'];
-    const symsz = 40;
+    const symsz = layout.textbox.text.icon.symbol_size;
 
     var i = 0;
-    for (line = 0; line < nlines; line++) {
+    for (var line = 0; line < nlines; line++) {
         var posx = x - alignment[line];
         var posy = y + line * lineHeight;
         for (var j = 0; j < lineWords[line]; j++) {
@@ -304,6 +239,8 @@ function process_fillTextBox(ctx, x, y,
     }
 }
 
+//-------------------------------------------
+// SYMBOL ABBREVIATION MAP
 function sym2stat(sym) {
     switch (sym) {
         case 'atk': return 'attack'; break;
@@ -315,6 +252,8 @@ function sym2stat(sym) {
     }
 }
 
+//-------------------------------------------
+// COMPUTE TEXTBOX ALIGNMENT
 function process_alignment(textArr, wordWidths, lineWords, lineWidth, settings) {
     var space = settings.space;
     var bullet_width = 0;
@@ -323,7 +262,7 @@ function process_alignment(textArr, wordWidths, lineWords, lineWidth, settings) 
     var curr_align = lineWidth[0];
     var nlines = lineWords.length;
     var idx = 0; // position in textArr
-    for (line = 0; line < nlines; line++) {
+    for (var line = 0; line < nlines; line++) {
         if (textArr[idx] == '●') {
             curr_align = settings.width/2 - settings.padding.left;
             bullet_width = wordWidths[idx];
@@ -356,6 +295,8 @@ function process_alignment(textArr, wordWidths, lineWords, lineWidth, settings) 
     return alignment;
 }
 
+//-------------------------------------------
+// COMPUTE LINE WORDS AND LINE WIDTHS
 function process_lineWords_lineWidth(wordWidths, newlineAfter, settings) {
     var space = settings.space;
     var textboxWidth = settings.width;
@@ -391,6 +332,8 @@ function process_lineWords_lineWidth(wordWidths, newlineAfter, settings) {
     return [lineWords, lineWidth];
 }
 
+//-------------------------------------------
+// COMPUTE WORD WIDTHS
 function process_wordWidths(ctx, textArr, boldWords) {
     const font = ctx.font.replace('bold','').trim();
     const macros = [':center:',':left:',':right:'];
@@ -402,7 +345,7 @@ function process_wordWidths(ctx, textArr, boldWords) {
         if (macros.indexOf(textArr[i]) > -1) {
             wordWidths[i] = 0;
         } else if (symbols.indexOf(textArr[i]) > -1) {
-            wordWidths[i] = 35;
+            wordWidths[i] = layout.textbox.text.icon.word_width;
         } else {
             wordWidths[i] = ctx.measureText(textArr[i]).width;
         }
@@ -412,6 +355,8 @@ function process_wordWidths(ctx, textArr, boldWords) {
     return wordWidths;
 }
 
+//-------------------------------------------
+// COMPUTE BOLD TEXT
 function process_bold(textArr) {
     var boldWords = [];
     var isbold = false;
@@ -430,11 +375,12 @@ function process_bold(textArr) {
     return boldWords;
 }
 
+//-------------------------------------------
+// COMPUTE LINEBREAKS
 function process_linebreaks(textArr) {
     var textArr_ = [...textArr];
     var newlineAfter_ = [];
-    //=================================================================
-    // INITIAL PROCESS
+    // ##### INITIAL PROCESS #####
     var ii = 0;
     var n = textArr.length;
     for (var i = 0; i < n; i++) {
@@ -447,7 +393,7 @@ function process_linebreaks(textArr) {
         newlineAfter_.push(0);
         ii++;
     }
-    // SORT OUT "EMPTY WORDS"
+    // ##### SORT OUT "EMPTY WORDS" #####
     var newlineAfter = [];
     for (var i = 0; i < textArr_.length; i++) {
         if (textArr_[i] != '') {
@@ -457,145 +403,52 @@ function process_linebreaks(textArr) {
             newlineAfter[newlineAfter.length-1] += newlineAfter_[i];
         }
     }
-    //=================================================================
     return newlineAfter;
 }
 
-// function render_text(ctx, card, color) {
-//     var text = card.text;
-//     var item = "";
-//     if (card.hasOwnProperty('item')) {
-//         item = card.item;
-//     }
-    
-//     var textboxWidth = 500;
-    
-//     var space = 6.5;
-//     var lineHeight = 34;
-//     var textBoxBottom = 775;
-    
-//     if (item == "") {
-//         textBoxBottom += 55;
-//     }
-
-//     // Styling needs to be set for ctx.measureText
-//     // to measure correctly
-//     var fillStyle = "black";
-//     var font = "26px Arial";
-//     var bold = false;
-//     ctx.fillStyle = fillStyle;
-//     ctx.font = font;
-
-//     var textArr = text.split(" ");
-//     var wordWidths = Array(textArr.length);
-//     for (var i = 0; i < textArr.length; i++) {
-//         if (!bold && textArr[i].slice(0,2) == "**") {
-//             ctx.font = "bold " + font;
-//             bold = true;
-//         }
-//         wordWidths[i] = ctx.measureText(textArr[i].replace(/\*\*/, '')).width;
-//         if (bold && textArr[i].slice(-2) == "**") {
-//             ctx.font = font;
-//             bold = false;
-//         }
-//     }
-
-//     // Calculate num lines and line widths
-//     var line = 0;
-//     var lineWords = [0];
-//     var lineWidth = [0];
-//     for (var i = 0; i < textArr.length; i++) {
-//         lineWords[line]++;
-//         lineWidth[line] += wordWidths[i];
-//         if (lineWidth[line] > textboxWidth) {
-            
-//             lineWords[line]--;
-//             lineWidth[line] -= (wordWidths[i] + space);
-
-//             line++;
-//             lineWords[line] = 1;
-//             lineWidth[line] = wordWidths[i];
-//         }
-
-//         if (i < textArr.length - 1) {
-//             lineWidth[line] += space;
-//         }
-//     }
-//     var nlines = line+1;
-
-//     var minPadding = 10;
-//     var textboxPadding = minPadding + 20;
-//     var height = nlines * lineHeight + 2*textboxPadding;
-//     var x = 315;
-//     var y = textBoxBottom - height + textboxPadding + 25; //667
-//     render_textbox(ctx, card, color, textBoxBottom, height); 
-
-//     // Write out lines
-//     ctx.fillStyle = fillStyle;
-//     ctx.font = font;
-//     var i = 0;
-//     for (line = 0; line < nlines; line++) {
-//         var posx = x - lineWidth[line]/2;
-//         var posy = y + line * lineHeight;
-//         for (var j = 0; j < lineWords[line]; j++) {
-//             if (!bold && textArr[i].slice(0,2) == "**") {
-//                 ctx.font = "bold " + font;
-//                 bold = true;
-//             }
-            
-//             ctx.fillText(textArr[i].replace(/\*\*/, ''), posx, posy);
-//             if (bold && textArr[i].slice(-2) == "**") {
-//                 ctx.font = font;
-//                 bold = false;
-//             }
-//             posx += wordWidths[i] + space;
-//             i++;
-//         }
-//     }
-
-//     // Render item
-//     render_item(ctx, item);
-// }
-
+//=============================================================
+// DRAW ITEM
 function render_item(ctx, item) {
     if (item == "") return;
-    var sz = 100;
-    var x = 315 - sz/2;
-    var y = 880 - sz - 5;
+    var sz = layout.item.size;
+    var x = layout.canvas.width/2 - sz/2;
+    var y = layout.canvas.height - sz - layout.item.shift_y;
     ctx.drawImage(gfx["item-"+item], x, y, sz, sz);
 }
 
+//=============================================================
+// DRAW TIER
 function render_tier(ctx, card) {
     var tier = card.tier;
-    var strokesize = 5;
-    var x = 553;
-    var y = 80;
+    var x = layout.tier.x;
+    var y = layout.tier.y;
 
-    var sc = 1.1;
-    var sz = 76;
-    var posx = x - sz/2 - 4;
-    var posy = y - sz/2 - 20;
+    var sc = layout.tier.gear.scale;
+    var sz = layout.tier.gear.size;
+    var posx = x - sz/2 - layout.tier.gear.shift_x;
+    var posy = y - sz/2 - layout.tier.gear.shift_y;
 
     ctx.drawImage(gfx.gear, posx, posy, sc*sz, sc*sz);
         
-    ctx.fillStyle = "white";
-    ctx.font = "48px " + font;;
+    ctx.fillStyle = layout.tier.text.color;
+    ctx.font = layout.tier.text.font;
     var textMeas = ctx.measureText(tier);
     x -= textMeas.width/2;
 
     // Draw the border
-    ctx.strokeStyle = "black";  // Set the border color
-    ctx.lineWidth = strokesize; // Set the border width
+    ctx.strokeStyle = layout.tier.text.stroke;  // Set the border color
+    ctx.lineWidth = layout.tier.text.strokesize; // Set the border width
 
     ctx.strokeText(tier, x, y);
     ctx.fillText(tier, x, y);
     
 }
 
+//=============================================================
+// DRAW TYPE
 function render_type(ctx, y, supertype, type, subtype) {
-    var strokesize = 5;
-    var x = 315;
-    y -= 10;
+    var x = layout.canvas.width/2;
+    y -= layout.type.shift_y;
     var typeString = "";
     switch (supertype) {
         case "basic":
@@ -631,69 +484,73 @@ function render_type(ctx, y, supertype, type, subtype) {
             break;
         case "radius":
             if (type != "attack") {
-                typeString += " - Area";
+                typeString += ""; //" - Area";
             }
             break;
         default:
     }
 
-    ctx.fillStyle = "white";
-    ctx.font = "28px " + font;;
+    ctx.fillStyle = layout.type.text.color;
+    ctx.font = layout.type.text.font;
 
     var textMeas = ctx.measureText(typeString);
     x -= textMeas.width/2;
 
-    ctx.strokeStyle = "black"; // Set the border color
-    ctx.lineWidth = strokesize; // Set the border width
+    ctx.strokeStyle = layout.type.text.stroke; // Set the border color
+    ctx.lineWidth = layout.type.text.strokesize; // Set the border width
 
     ctx.strokeText(typeString, x, y);
     ctx.fillText(typeString, x, y);
 }
 
+//=============================================================
+// DRAW NAME
 function render_name(ctx, card, fullwidth = false) {
     var name = card.name;
-    var x = fullwidth ? 315 : 335;
-    var y = 74;
+    var x = fullwidth ? layout.canvas.width/2 : layout.name.x;
+    var y = layout.name.y;
 
-    ctx.fillStyle = "black";
-    ctx.font = "35px " + font;;
+    ctx.fillStyle = layout.name.text.color;
+    ctx.font = layout.name.text.font;
 
     var textMeas = ctx.measureText(name);
     x -= textMeas.width/2;
     ctx.fillText(name, x, y);
 }
 
+//=============================================================
+// DRAW READABILITY LETTER
 function render_readability(ctx, card) {
     var color = card.color;
-    var strokesize = 5;
-    var x = 600;
-    var y = 45;
+    var x = layout.readability.x;
+    var y = layout.readability.y;
     var letter = (color == "gold") ? 'D' : color[0].toUpperCase();
 
-    ctx.fillStyle = colorMap.readability.bg;
-    ctx.font = "24px " + font;;
+    ctx.fillStyle = layout.readability.text.color;
+    ctx.font = layout.readability.text.font;
     var textMeas = ctx.measureText(letter);
     x -= textMeas.width/2;
 
     // Draw the border
-    ctx.strokeStyle = colorMap.readability.border; // Set the border color
-    ctx.lineWidth = strokesize; // Set the border width
+    ctx.strokeStyle = layout.readability.text.stroke; // Set the border color
+    ctx.lineWidth = layout.readability.text.strokesize; // Set the border width
 
     ctx.strokeText(letter, x, y);
     ctx.fillText(letter, x, y);
 }
 
-function render_textbox(ctx, card, color, textBoxBottom, height) {
+//=============================================================
+// DRAW TEXTBOX FRAME
+function render_frame(ctx, card, color, textBoxBottom, height) {
     var supertype = card.supertype;
     var type = card.type;
     var value = card[type != "defenseSkill" ? type : "defense"];
     var subtype = card.subtype;
     var subvalue = card.subtypevalue;
 
-    var strokesize = 8;
-    var width = 570;
-    var radius = 20;
-    var x = 30;
+    var width = layout.textbox.frame.width;
+    var radius = layout.textbox.frame.radius;
+    var x = (layout.canvas.width - width)/2;
     var y = textBoxBottom - height;
 
     // ----------------------------------------------
@@ -706,8 +563,8 @@ function render_textbox(ctx, card, color, textBoxBottom, height) {
     ctx.arcTo(x + 5*width/6, y - width/16, x + 5*width/6, y, width/16);
     ctx.closePath();
     
-    ctx.strokeStyle = colorMap.textbox.border; // Set the border color
-    ctx.lineWidth = strokesize; // Set the border width
+    ctx.strokeStyle = layout.textbox.frame.stroke; // Set the border color
+    ctx.lineWidth = layout.textbox.frame.strokesize; // Set the border width
     
     ctx.stroke();
     ctx.fill();
@@ -716,13 +573,13 @@ function render_textbox(ctx, card, color, textBoxBottom, height) {
 
     // ----------------------------------------------
     // Textbox corner gears
-    var sz = 70;
-    var shift = 13;
+    var sz = layout.textbox.gear.size;
+    var shift = layout.textbox.gear.shift_left;
     var posx = x - shift;
     var posy = y + height - sz + shift;
     ctx.drawImage(gfx.gear, posx, posy, sz, sz);
     
-    posx = x + width - sz + 15;
+    posx = x + width - sz + layout.textbox.gear.shift_right;
     ctx.drawImage(gfx.gear, posx, posy, sz, sz);
 
     // ----------------------------------------------
@@ -730,13 +587,14 @@ function render_textbox(ctx, card, color, textBoxBottom, height) {
     var gradient = ctx.createLinearGradient(x, y, x, y + height);
     
     var stop1 = 0.5;
-    var stop2 = (height - 40) / height;
+    var tmp = layout.textbox.gradient.shift_stop;
+    var stop2 = (height - tmp) / height;
     stop1 = stop2 < stop1 ? stop2/2 : stop1;
 
     gradient.addColorStop(0, color);
     gradient.addColorStop(stop1, color);
-    gradient.addColorStop(stop2, colorMap.textbox.bg);
-    gradient.addColorStop(1, colorMap.textbox.bg);
+    gradient.addColorStop(stop2, layout.textbox.frame.bgcolor);
+    gradient.addColorStop(1, layout.textbox.frame.bgcolor);
 
     ctx.fillStyle = gradient;
     ctx.beginPath();
@@ -748,18 +606,18 @@ function render_textbox(ctx, card, color, textBoxBottom, height) {
     ctx.closePath();
     
     // Draw the border
-    ctx.strokeStyle = colorMap.textbox.border; // Set the border color
-    ctx.lineWidth = strokesize; // Set the border width
+    ctx.strokeStyle = layout.textbox.frame.stroke; // Set the border color
+    ctx.lineWidth = layout.textbox.frame.strokesize; // Set the border width
     
     ctx.stroke();
     ctx.fill();
     
     // Inner color
-    var padx = 8;
-    var pady = 5;
+    var padx = layout.textbox.frame.inner_color_pad_x;
+    var pady = layout.textbox.frame.inner_color_pad_y;
     width -= 2*padx;
     height -= 2*pady;
-    ctx.fillStyle = colorMap.textbox.bg;
+    ctx.fillStyle = layout.textbox.frame.bgcolor;
     roundedRectPath(ctx, x + padx, y + pady, width, height, radius);
     ctx.fill();
 
@@ -772,6 +630,8 @@ function render_textbox(ctx, card, color, textBoxBottom, height) {
     }
 }
 
+//-------------------------------------------
+// DRAW ROUNDED CORNER RECTANGLE
 function roundedRectPath(ctx, x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -782,6 +642,8 @@ function roundedRectPath(ctx, x, y, w, h, r) {
     ctx.closePath();
 }
 
+//-------------------------------------------
+// DRAW ARCS FOR BANNER
 function draw_arc(ctx, p0, p1, gam) {
     let add = function (p, q) { return [p[0] + q[0], p[1] + q[1]]; }
     let diff = function (p, q) { return [p[0] - q[0], p[1] - q[1]]; }
@@ -796,19 +658,21 @@ function draw_arc(ctx, p0, p1, gam) {
     ctx.arcTo(cp[0], cp[1], p1[0], p1[1], r);
 }
 
+//-------------------------------------------
+// DRAW BANNER BOTTOM
 function draw_banner_bottom(ctx, color, x, y, width, height) {
-    var ratio, s, r;
+    var ratio, s;
     var p1, p2, p3, gam;
     switch (color) {
         case 'gold':
-            ratio = 0.9;
+            ratio = layout.banner.gold.ratio;
             ctx.lineTo(x, y+height);
             ctx.lineTo(x+width/2, y + height - ratio * width/2);
             ctx.lineTo(x+width, y+height);
             break;
         case 'green':
-            ratio = 6/7;
-            gam = 0.5;
+            ratio = layout.banner.green.ratio;
+            gam = layout.banner.green.gam;
             ctx.lineTo(x, y + height - ratio * width/2);
             p1 = [x, y + height - ratio * width/2];
             p2 = [x+width/2, y+height];
@@ -832,7 +696,7 @@ function draw_banner_bottom(ctx, color, x, y, width, height) {
             break;
         case 'blue':
             s = width/5;
-            gam = 0.5;
+            gam = layout.banner.blue.gam;
             p1 = [x, y + height - s];
             p2 = [x + s/2, y + height];
             p3 = [x + s, y + height - s];
@@ -853,13 +717,15 @@ function draw_banner_bottom(ctx, color, x, y, width, height) {
             draw_arc(ctx, p2, p3, gam);
             break;
         default:
-            ratio = 0.9;
+            ratio = layout.banner.red.ratio;
             ctx.lineTo(x, y + height - ratio * width/2);
             ctx.lineTo(x+width/2, y+height);
             ctx.lineTo(x+width, y + height - ratio * width/2);
     }
 }
 
+//=============================================================
+// DRAW BANNER
 function render_banner(ctx, card, color, bleed) {
     var initiative = card.initiative;
     var actions = {};
@@ -873,19 +739,17 @@ function render_banner(ctx, card, color, bleed) {
 
     var nactions = Object.keys(actions).length;
 
-    var base = 125;
-    var topPadding = 35 + 15; // 15 is flex
-    var bottomPadding = 20 + 15; // maybe 10 is flex?
+    var base = layout.banner.base;
+    var topPadding = layout.banner.padding.top + 15; // 15 is flex
+    var bottomPadding = layout.banner.padding.bottom + 10; // maybe 10 is flex?
     var padding = topPadding + bottomPadding;
-    var actionSize = 95;
+    var actionSize = layout.banner.action_size;
     var height = base + actionSize * nactions + padding + bleed;
     
-    var baseX = 30;
-    var baseY = 0;
-    var width = 90;
+    var baseX = layout.banner.base_x;
+    var baseY = layout.banner.base_y;
+    var width = layout.banner.width;
 
-    var strokesize = 8;
-    var pointyness = 0.9;
     var x = baseX;
     var y = baseY - bleed;
     
@@ -898,8 +762,8 @@ function render_banner(ctx, card, color, bleed) {
     ctx.closePath();
     
     // Draw the border
-    ctx.strokeStyle = colorMap.banner.border; // Set the border color
-    ctx.lineWidth = strokesize; // Set the border width
+    ctx.strokeStyle = layout.banner.stroke; // Set the border color
+    ctx.lineWidth = layout.banner.strokesize; // Set the border width
     
     ctx.stroke();
     ctx.fill();
@@ -910,15 +774,14 @@ function render_banner(ctx, card, color, bleed) {
     y = baseY;
     var w = width - 2*shiftX;
     var memAlpha = ctx.globalAlpha;
-    ctx.fillStyle = "black";
-    ctx.globalAlpha = .10;
+    ctx.globalAlpha = layout.banner.shade_alpha;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x, y + height);
     ctx.lineTo(x+w, y + height);
     ctx.lineTo(x+w, y);
     ctx.closePath();
-    let gradient = ctx.createLinearGradient(0, base, 0, y + height - pointyness * width/4);
+    let gradient = ctx.createLinearGradient(0, base, 0, y + height - 0.9 * width/4);
     gradient.addColorStop(0, "rgba(0, 0, 0, 255)");
     gradient.addColorStop(.90, "rgba(0, 0, 0, 255)");
     gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
@@ -931,7 +794,7 @@ function render_banner(ctx, card, color, bleed) {
     x = baseX + shiftX;
     y = baseY - bleed;
     w = width - 2*shiftX;
-    h = base + 25 + bleed;
+    var h = base + layout.banner.small.base_shift + bleed;
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -939,45 +802,44 @@ function render_banner(ctx, card, color, bleed) {
     ctx.lineTo(x+w, y);
     ctx.closePath();
     
-    ctx.globalAlpha = .45;
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 10;
+    ctx.globalAlpha = layout.banner.small.stroke_alpha;
+    ctx.strokeStyle = layout.banner.small.stroke;
+    ctx.lineWidth = layout.banner.small.strokesize;
     ctx.stroke();
     ctx.globalAlpha = memAlpha;
     ctx.fill();
 
     // Render inititative hourglass
-    var scplus = 55;
-    x = baseX - 5 - scplus/2;
-    y = baseY - 5;
+    var scplus = layout.banner.initiative.scale_add;
+    x = baseX - layout.banner.initiative.shift_x - scplus/2;
+    y = baseY - layout.banner.initiative.shift_y;
     var sz = width + scplus;
     ctx.drawImage(gfx.initiative, x, y, sz, sz);
 
     // render initiative
     x = baseX + width/2;
-    y = baseY + 100;
+    y = baseY + layout.banner.initiative.text_shift_y;
     var value = initiative;
 
-    ctx.fillStyle = "white";
-    ctx.font = "100px " + font;
+    ctx.fillStyle = layout.banner.text.color;
+    ctx.font = layout.banner.initiative.font;
 
     var textMeas = ctx.measureText(value);
     x -= textMeas.width/2;
 
-    ctx.strokeStyle = "black"; // Set the border color
-    ctx.lineWidth = strokesize; // Set the border width
+    ctx.strokeStyle = layout.banner.text.stroke; // Set the border color
+    ctx.lineWidth = layout.banner.strokesize; // Set the border width
 
     ctx.strokeText(value, x, y);
     ctx.fillText(value, x, y);
 
     // Secondary actions
-    var scplus = 15;
     x = baseX - (actionSize - width)/2;
     var sz = actionSize;
     var posx, posy;
     var keys = Object.keys(actions);
 
-    ctx.font = "65px " + font;
+    ctx.font = layout.banner.secondary_actions.font;
     for (var i = 0; i < keys.length; i++) {
         // Draw icon
         y = base + topPadding + i * sz;
@@ -995,15 +857,16 @@ function render_banner(ctx, card, color, bleed) {
 
 }
 
+//=============================================================
+// DRAW NAMEBOX
 function render_namebox(ctx, fullwidth = false) {
-    var strokesize = 8;
-    var width = fullwidth ? 540 : 455;
-    var height = 60;
+    var width = fullwidth ? layout.name.box.width.full : layout.name.box.width.regular;
+    var height = layout.name.box.height;
     var radius = height/2;
-    var x = fullwidth ? 45 : 130;
-    var y = 34;
+    var x = fullwidth ? layout.name.box.x.full : layout.name.box.x.regular;
+    var y = layout.name.box.y;
 
-    ctx.fillStyle = colorMap.namebox.bg;
+    ctx.fillStyle = layout.name.box.bgcolor;
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
     ctx.arcTo(x + width, y, x + width, y + height, radius);
@@ -1013,42 +876,44 @@ function render_namebox(ctx, fullwidth = false) {
     ctx.closePath();
     
     // Draw the border
-    ctx.strokeStyle = colorMap.namebox.border; // Set the border color
-    ctx.lineWidth = strokesize; // Set the border width
+    ctx.strokeStyle = layout.name.box.stroke; // Set the border color
+    ctx.lineWidth = layout.name.box.strokesize; // Set the border width
     
     ctx.fill();
     ctx.stroke();
 }
 
+//=============================================================
+// DRAW BACKGROUND ELEMENT UPPER
 function render_bg_upper(ctx, bleed) { 
-    var strokesize = 6;
     var width = layout.canvas.width + 2*bleed;
-    var height = 65 + bleed;
+    var height = layout.bg_elements.upper.height + bleed;
     var x = -bleed;
     var y = -bleed;
     
-    ctx.fillStyle = colorMap.background.bg; // Set the fill color
+    ctx.fillStyle = layout.bg_elements.bgcolor; // Set the fill color
     
     // Draw the rectangle border
-    ctx.strokeStyle = colorMap.background.border; // Set the border color
-    ctx.lineWidth = strokesize; // Set the border width
+    ctx.strokeStyle = layout.bg_elements.stroke; // Set the border color
+    ctx.lineWidth = layout.bg_elements.strokesize; // Set the border width
     
     ctx.strokeRect(x, y, width, height);
     ctx.fillRect(x, y, width, height);
 }
 
+//=============================================================
+// DRAW BACKGROUND ELEMENT LOWER
 function render_bg_lower(ctx, bleed) {
-    var strokesize = 6;
     var width = layout.canvas.width + 2*bleed;
-    var height = 125 + bleed;
+    var height = layout.bg_elements.lower.height + bleed;
     var x = -bleed;
-    var y = canvas.height - (height + bleed);
+    var y = layout.canvas.height - height;
     
-    ctx.fillStyle = colorMap.background.bg; // Set the fill color
+    ctx.fillStyle = layout.bg_elements.bgcolor; // Set the fill color
 
     // Draw the rectangle border
-    ctx.strokeStyle = colorMap.background.border; // Set the border color
-    ctx.lineWidth = strokesize; // Set the border width
+    ctx.strokeStyle = layout.bg_elements.stroke; // Set the border color
+    ctx.lineWidth = layout.bg_elements.strokesize; // Set the border width
     
     ctx.strokeRect(x, y, width, height);
     ctx.fillRect(x, y, width, height);
