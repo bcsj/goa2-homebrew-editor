@@ -1,4 +1,5 @@
 import * as stats from "./statProfiles.js";
+import * as constants from "./constants.js";
 
 //=========================================================
 // EDITOR DOM
@@ -43,7 +44,7 @@ export const input_tier_iii_item = document.getElementsByName("tier-III-item");
 //=========================================================
 // GET BRANCH DATA
 export function get_branch() {
-    branch = {};
+    var branch = {};
     branch['statType'] = select_stat_type.value.toLowerCase();
     branch['statProfile'] = {};
     ['initiative', 'attack', 'defense', 'movement'].forEach(function (stat) {
@@ -333,172 +334,193 @@ function get_feature_level() {
     if (advanced) return "advanced";
 }
 
-export function guiUpdate() {
-    console.log("update gui called!");
-    const supertype = select_supertype.value.toLowerCase();
-    var color = select_card_color.value.toLowerCase();
-    const feat = get_feature_level();
+function guiSetColorOpts(colors) {
     const color_opts = select_card_color.children;
+    const color = select_card_color.value.toLowerCase();
+
+    for (var i = 0; i < color_opts.length; i++) {
+        let val = color_opts[i].value.toLowerCase();
+        if (colors.includes(val)) { 
+            color_opts[i].hidden = false; 
+        } else {
+            color_opts[i].hidden = true;
+            if (color == val) { 
+                select_card_color.value = colors[0].capitalize(); 
+
+                // TODO: CONSIDER CHANGING THIS???
+                let event = new Event("change");
+                select_card_color.dispatchEvent(event);
+            }
+        }
+    }
+}
+
+function guiToggleTiers(tiers) {
+    input_tier_toggle.forEach(function (ee, i) {
+        ee.checked = tiers[i];
+
+        // TODO: CONSIDER CHANGING THIS???
+        let event = new Event("change");
+        ee.dispatchEvent(event);
+    });
+}
+
+function guiSetAttributes(attributes, revealIni = false) {
+    ['attack','defense','movement','initiative'].forEach(function (stat) {
+        let ee = input_stat_toggle(stat);
+        ee.checked = attributes.includes(stat);
+
+        // TODO: CONSIDER CHANGING THIS???
+        let event = new Event("change");
+        ee.dispatchEvent(event);
+        
+        if (stat == 'initiative') {
+            ee.nextElementSibling.style.display = revealIni ? "flex" : "none";
+        }
+    });
+}
+
+function guiSetTypeOpts(types) {
     const type_opts = select_type.children;
-
-    let event = new Event("change");
-
-    // Reset card type visibility;
-    if (select_type.value == "Ultimate")
-        select_type.value = "Attack";
+    const type = select_type.value.toLowerCase();
+    
     for (var i = 0; i < type_opts.length; i++) {
-        if (type_opts[i].value == 'Ultimate')
+        let val = type_opts[i].value.toLowerCase();
+        if (types.includes(val)) { 
+            type_opts[i].hidden = false; 
+        } else {
             type_opts[i].hidden = true;
-        else
-            type_opts[i].hidden = false;
+            if (type == val) { 
+                select_type.value = types[0].capitalize(); 
+                
+                // TODO: CONSIDER CHANGING THIS???
+                let event = new Event("change");
+                select_type.dispatchEvent(event);
+            }
+        }
+    }
+}
+
+function guiUpdateNonbasic(change) {
+    const isAdv = (get_feature_level() == "advanced");
+
+    // CHANGES ONLY WHEN THE SUPERTYPE WAS CAHNGED
+    if (change == "supertype" || change == "features") {
+        // Set available colors 
+        let colors = ['red', 'blue', 'green'];
+        if (isAdv) colors.push('custom');
+        guiSetColorOpts(colors);
+        guiToggleTiers([1, 1, 1]);
     }
 
+    // CHANGES ONLY WHEN THE COLOR WAS CHANGED
+    if (change == "color" || change == "features") {
+        let color = select_card_color.value.toLowerCase();
+        let attributes = ['attack','defense','movement','initiative'];
+        if (!isAdv && color != "red") attributes.shift();
+        guiSetAttributes(attributes);
+        
+        let types = ['attack','defense','skill','defense/skill','movement'];
+        if (!isAdv && color != "red") attributes.shift();
+        guiSetTypeOpts(types);
+        
+    }
+}
+
+function guiUpdateBasic(change) {
+    const isAdv = (get_feature_level() == "advanced");
+
+    // CHANGES ONLY WHEN THE SUPERTYPE WAS CAHNGED
+    if (change == "supertype" || change == "features") {
+        // Set available colors 
+        let colors = ['gold', 'silver'];
+        if (isAdv) colors.push('custom');
+        guiSetColorOpts(colors);
+        guiToggleTiers([1, 0, 0]);
+    }
+
+    // CHANGES ONLY WHEN THE COLOR WAS CHANGED
+    if (change == "color" || change == "features") {
+        let color = select_card_color.value.toLowerCase();
+        let attributes = ['attack','defense','movement','initiative'];
+        if (!isAdv && color == "silver") {
+            attributes.shift();      // Remove attack
+            attributes.splice(1, 1); // Remove movement
+        }
+        guiSetAttributes(attributes);
+        
+        let types = ['attack','defense','skill','defense/skill','movement'];
+        if (!isAdv && color == "silver") {
+            types.shift(); // Remove attack
+            types.pop();   // Remove movement
+        }
+        guiSetTypeOpts(types);
+        
+    }
+}
+
+function guiUpdateUltimate(change) {
+    const isAdv = (get_feature_level() == "advanced");
+
+    // CHANGES ONLY WHEN THE SUPERTYPE WAS CAHNGED
+    if (change == "supertype" || change == "features") {
+        // Set available colors 
+        let colors = ['purple'];
+        if (isAdv) colors.push('custom');
+        guiSetColorOpts(colors);
+        guiToggleTiers([1, 0, 0]);
+
+        /*input_tier_toggle.forEach(function (ee, i) {
+            ee.checked = i == 0;
+
+            // TODO: CONSIDER CHANGING THIS???
+            let event = new Event("change");
+            ee.dispatchEvent(event);
+        });*/
+    }
+
+    // CHANGES ONLY WHEN THE COLOR WAS CHANGED
+    if (change == "color" || change == "features") {
+        guiSetAttributes([], isAdv);
+        
+        let types = ['ultimate'];
+        guiSetTypeOpts(types);
+    }
+}
+
+
+export function guiUpdate(change = "") {
+    // CHANGE can be SUPERTYPE, COLOR, or FEATURES
+
+    console.log("update gui called! (change type '" + change + "')");
+    const isAdv = get_feature_level() == "advanced";
+    const supertype = select_supertype.value.toLowerCase();
+
     // Changing card type UI
-    ['II', 'III'].forEach(function (tier) {
-        const e = document.getElementById("card-type-tier-" + tier);
-        e.style.display = feat == "advanced" ? "block" : "none";
-    });
+    if (change == "features") {
+        ['II', 'III'].forEach(function (tier) {
+            const e = document.getElementById("card-type-tier-" + tier);
+            e.style.display = isAdv ? "block" : "none";
+        });
+    }
 
     switch (supertype) {
         case 'nonbasic':
-            for (var i = 0; i < color_opts.length; i++) {
-                let val = color_opts[i].value.toLowerCase();
-                if (['red','blue','green'].indexOf(val) > -1) {
-                    color_opts[i].hidden = false;
-                } else if (feat == "advanced" && val == "custom") {
-                    color_opts[i].hidden = false;
-                } else {
-                    if (select_card_color.value.toLowerCase() == val) {
-                        color = 'red';
-                        select_card_color.value = color[0].toUpperCase() + color.slice(1);
-                        select_card_color.dispatchEvent(event);
-                    }
-                    color_opts[i].hidden = true;
-                }
-            }
-            input_tier_toggle.forEach(function (ee) {
-                ee.checked = true;
-                ee.dispatchEvent(event);
-            });
-            ['attack','defense','movement','initiative'].forEach(function (stat) {
-                let ee = input_stat_toggle(stat);
-                ee.checked = true;
-                if (feat == "normal")
-                    if (stat == "attack" && color != "red")
-                        ee.checked = false;
-
-                ee.dispatchEvent(event);
-                
-                if (stat == 'initiative') {
-                    ee.nextElementSibling.style.display = "none";
-                }
-            });
-            if (feat == "normal" && color != "red") {
-                if (select_type.value == 'Attack')
-                    select_type.value = 'Skill';
-                for (var i = 0; i < type_opts.length; i++) {
-                    if (['attack','ultimate'].indexOf(type_opts[i].value.toLowerCase()) > -1)
-                        type_opts[i].hidden = true;
-                    else
-                        type_opts[i].hidden = false;
-                }
-            }
+            guiUpdateNonbasic(change);
             break;
 
         case 'basic':
-            for (var i = 0; i < color_opts.length; i++) {
-                let val = color_opts[i].value.toLowerCase();
-                if (['silver','gold'].indexOf(val) > -1) {
-                    color_opts[i].hidden = false;
-                } else if (feat == "advanced" && val == "custom") {
-                    color_opts[i].hidden = false;
-                } else {
-                    if (select_card_color.value.toLowerCase() == val) {
-                        color = 'gold';
-                        select_card_color.value = color[0].toUpperCase() + color.slice(1);
-                        select_card_color.dispatchEvent(event);
-                    }
-                    color_opts[i].hidden = true;
-                }
-            }
-            input_tier_toggle.forEach(function (ee, i) {
-                ee.checked = i == 0;
-                ee.dispatchEvent(event);
-            });
-            ['attack','defense','movement','initiative'].forEach(function (stat) {
-                let ee = input_stat_toggle(stat);
-                ee.checked = true;
-                if (feat == "normal") {
-                    if (color == "silver") {
-                        if (stat == "attack" || stat == "movement")
-                            ee.checked = false;
-                    }
-                }
-                ee.dispatchEvent(event);
-                if (stat == 'initiative') {
-                    ee.nextElementSibling.style.display = "none";
-                }
-            });
-            if (feat == "normal" && color == "silver") {
-                if (select_type.value == 'Attack')
-                    select_type.value = 'Skill';
-                for (var i = 0; i < type_opts.length; i++) {
-                    if (type_opts[i].value == 'Attack' || type_opts[i] == "Movement")
-                        type_opts[i].hidden = true;
-                    else
-                        type_opts[i].hidden = false;
-                }
-            }
+            guiUpdateBasic(change);
             break;
 
         case 'ultimate':
-            for (var i = 0; i < color_opts.length; i++) {
-                let val = color_opts[i].value.toLowerCase();
-                if (['purple'].indexOf(val) > -1) {
-                    color_opts[i].hidden = false;
-                } else if (feat == "advanced" && val == "custom") {
-                    color_opts[i].hidden = false;
-                } else {
-                    if (select_card_color.value.toLowerCase() == val) {
-                        color = 'purple';
-                        select_card_color.value = color[0].toUpperCase() + color.slice(1);
-                        select_card_color.dispatchEvent(event);
-                    }
-                    color_opts[i].hidden = true;
-                }
-            }
-            input_tier_toggle.forEach(function (ee, i) {
-                ee.checked = i == 0;
-                ee.dispatchEvent(event);
-            });
-            ['attack','defense','movement','initiative'].forEach(function (stat) {
-                let ee = input_stat_toggle(stat);
-                ee.checked = false;
-                ee.dispatchEvent(event);
-                if (stat == 'initiative') {
-                    ee.nextElementSibling.style.display = feat == "advanced" ? "flex" : "none";
-                }
-            });
-            select_type.value = 'Ultimate';
-            if (feat == "normal") {
-                for (var i = 0; i < type_opts.length; i++) {
-                    if (type_opts[i].value != 'Ultimate')
-                        type_opts[i].hidden = true;
-                    else
-                        type_opts[i].hidden = false;
-                }
-            } else {
-                for (var i = 0; i < type_opts.length; i++) {
-                    if (type_opts[i].value == 'Ultimate')
-                        type_opts[i].hidden = false;
-                }
-            }
+            guiUpdateUltimate(change);
             break;
     }
 
     // Finalize
-    guiUpdateColors();
-    guiUpdateStat("All"); 
+    if (change == "color") guiUpdateColors();
+    guiUpdateStat(); 
 } // function guiUpdate()
 
 export function guiUpdateColors() {
@@ -511,8 +533,8 @@ export function guiUpdateColors() {
     var color_bg_off = 'whitesmoke';
 
     const color_str = select_card_color.value.toLowerCase();
-    if (Object.keys(cardColors).indexOf(color_str) >= 0) {
-        color_fg = cardColors[color_str];
+    if (Object.keys(constants.color_map).indexOf(color_str) >= 0) {
+        color_fg = constants.color_map[color_str];
         var color_rgb = hexToRgb(color_fg);
         var alpha = .875;
         Object.keys(color_rgb).forEach(function (k) {
@@ -539,7 +561,19 @@ export function guiUpdateColors() {
     
 }
 
-export function guiUpdateStat(stat) {
+function rgbToHex(r, g, b) {
+    return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
+}
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+function guiUpdateStat(stat = "all") {
     stat = stat.toLowerCase();
     if (stat == "all") {
         guiUpdateStat("attack");

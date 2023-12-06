@@ -1,106 +1,3 @@
-* {
-    box-sizing: border-box;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
-    font-size: 13px;
-    padding: 0;
-    margin: 0;
-}
-
-.container {
-    --fg-color: teal;
-    --bg-color: lightblue;
-    --on-color: lightsalmon;
-    --off-fg-color: lightgray;
-    --off-bg-color: whitesmoke;
-}
-
-.container *:disabled, .container .disabled {
-    background-color: var(--off-bg-color);
-    color: var(--off-fg-color);
-    border-color: var(--off-fg-color);
-}
-
-.container label, .container select {
-    cursor: pointer;
-}
-
-.container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: start;
-    width: 80%;
-    width: 1050px;
-    margin: 0px auto;
-    margin-top: 15px;
-
-    > div {
-        flex: 1;
-    }
-
-    > div:last-child {
-        flex: 0 0 300px;
-        width: 300px;
-    }
-}
-
-.main-panel {
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    align-items: start;
-}
-
-.navigation {
-
-    --fg-color: teal;
-    --bg-color: lightblue;
-    --on-color: lightsalmon;
-    --off-fg-color: lightgray;
-    --off-bg-color: whitesmoke;
-
-    width: 100%;
-    height: 50px;
-    border-radius: 10px 0px 0px 10px;
-    overflow: hidden;
-    background-color: var(--bg-color);
-
-    display: flex;
-    flex-direction: row;
-    justify-content: start;
-    align-items: center;
-
-    > div {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-
-        /*border: 5px solid var(--fg-color);
-        background-color: var(--bg-color);
-        color: var(--fg-color);
-        */
-        border-right: 1px solid;
-        border-image: 
-            linear-gradient(
-            to bottom, 
-            rgba(0, 0, 0, 0), 
-            rgba(0, 0, 0, 1) 50%,
-            rgba(0, 0, 0, 0) 100%
-            ) 1 100%;
-
-        height: 100%;
-        min-width: 90px;
-        padding: 0px 10px;
-
-        cursor: pointer;
-
-    }
-    > div:hover {
-        background-color: var(--on-color);
-    }
-}
 
 /****************************************************************
  * PREVIEW COLUMN
@@ -221,8 +118,11 @@
 /****************************************************************
  * EDITOR
  */
-.editor {
+/*#editor:target {
     display: flex;
+}*/
+#editor {
+    /*display: none;*/
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -278,7 +178,7 @@
 }
 
 /* CARD ID */
-.editor > .card-id {
+#editor > .card-id {
     height: 15px;
     > div {
         color: #aaa;
@@ -516,7 +416,7 @@ select, .names > input {
     cursor: help;
 }
 
-.editor > .help {
+#editor > .help {
     display: none;
     font-style: italic;
     border: 2px solid var(--fg-color);
@@ -540,7 +440,7 @@ select, .names > input {
         padding: 1px 3px;
     }
 }
-.editor > input:checked + .help { display: flex; }
+#editor > input:checked + .help { display: flex; }
 
 
 /* DEBUG */

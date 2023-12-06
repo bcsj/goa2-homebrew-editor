@@ -51,6 +51,23 @@ export function save(branch) {
     localStorage.setItem(name, JSON.stringify(branch));
 }
 
+export function localStorageUsage() {
+    var sz = localStorageSize();
+    return usage = sz / (5*1024);
+}
+
+export function localStorageSize() {
+    var keys = Object.keys(localStorage);
+    var sz_keys = keys.join('').length;
+    var storage = [];
+    for (var i = 0; i < keys.length; i++) {
+        storage.push(localStorage.getItem(keys[i]));
+    }
+    var sz_storage = storage.join('').length;
+    var sz_KB = (sz_keys + sz_storage)/1024;
+    return sz_KB;
+}
+
 // hashing function from https://stackoverflow.com/a/52171480
 const cyrb53 = (str, seed = 0) => {
     let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
