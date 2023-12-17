@@ -50,33 +50,6 @@
     visibility: visible;
 }
 
-.card-preview-buttons {
-    display: flex;
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-
-    > div {
-        > img {
-            height: 35px;
-        }
-
-        > button {
-            border-radius: 10px;
-            border: 2px solid var(--fg-color);
-            background-color: var(--bg-color);
-            color: var(--fg-color);
-            height: 35px;
-            width: 70px;
-            cursor: pointer;
-        }
-        > button:enabled:hover {
-            box-shadow: 0px 0px 10px salmon;
-        }
-    }
-}
-
 .textbox-preview {
     position: relative;
     width: 100%;
@@ -175,6 +148,41 @@
 
     > input[type="checkbox"] { display: none; }
     > input[type="checkbox"]:not(:checked) + div { display: none; }
+
+    .card-preview-buttons {
+        position: relative;
+        top: -5px;
+        display: flex;
+        width: 100%;
+        flex-direction: row;
+        justify-content: end;
+        align-items: center;
+        gap: 5px;
+    
+        > div {
+            > img {
+                height: 25px;
+            }
+    
+            > button {
+                border-radius: 10px;
+                border: 2px solid var(--fg-color);
+                background-color: var(--bg-color);
+                color: var(--fg-color);
+                height: 25px;
+                width: 25px;
+                cursor: pointer;
+            }
+            > button:enabled:hover {
+                box-shadow: 0px 0px 10px salmon;
+            }
+            > button:disabled {
+                background-color: var(--off-bg-color);
+                color: var(--off-fg-color);
+                border-color: var(--off-fg-color);
+            }
+        }
+    }
 }
 
 /* CARD ID */

@@ -27,31 +27,180 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    gap: 5px;
+    align-items: start;
+    gap: 10px;
 
     > div {
         
     }
 }
 
-.branch {
-    --border-color: none;
-    border: 2px solid var(--border-color);
+.branch:hover {
+    > .branch-color {
+        background-color: var(--fg-color);
+    }
+    box-shadow: inset 0px 0px 5px var(--fg-color);
+}
 
-    overflow: hidden;
+.branch {
     width: 100%;
-    height: 50px;
-    border-radius: 5px;
+    height: 55px;
+    padding: 5px;
 
     display: flex;
     flex-direction: row;
-    justify-content: start;
+    justify-content: space-between;
     align-items: center;
     gap: 10px;
 
-    > .color-indicator {
+    border: 3px solid var(--fg-color);
+    background-color: var(--bg-color);
+    border-radius: 10px;
+
+    /*> .color-indicator {
         height: 100%;
         width: 20px;
+    }*/
+
+    /*> .branch-color {
+        height: 45px;
+        aspect-ratio: 1;
+        border-radius: 100%;
+        border: 4px solid var(--fg-color);
+        background-color: var(--bg-color);
+
+        transition: cubic-bezier(0.075, 0.82, 0.165, 1);
+        transition-duration: 1.0s;
+    }*/
+
+    > .branch-type {
+        display: flex;
+        flex-direction: left;
+        justify-content: start;
+        align-items: center;
+        height: 45px;
+        width: 65px;
+
+        > img.type-icon {
+            height: 40px;
+            width: 40px;
+        }
+        > img.subtype-icon {
+            height: 25px;
+            filter: invert(1);
+        }
+    }
+
+    > .branch-content {
+        display: flex;
+        flex-direction: row;
+        justify-content: start;
+        align-items: center;
+        gap: 3px;
+
+        /*background-color: white;*/
+        height: 100%;
+        border-radius: 9999px;
+    
+        > div {
+            display: flex;
+            flex-direction: row;
+            justify-content: start;
+            align-items: center;
+
+            border: 2px solid var(--fg-color);
+            border-radius: 5px;
+            background-color: white;
+            height: 90%;
+            width: 95px;
+            padding: 1px;
+            margin: 0px;
+
+            > img {
+                height: 90%;
+                padding: 0px;
+                filter: invert(1);
+            }
+            > span {
+                flex: 1;
+                text-align: center;
+            }
+        }
+        > .branch-items {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+
+            width: 20px;
+            height: 100%;
+
+            > img {
+                width: 20px;
+                filter: invert(1);
+            }
+        }
+    }
+    
+    > .branch-actions {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        justify-content: start;
+        align-items: center;
+        height: 100%;
+
+        > a {
+            display: flex;
+            flex-direction: row;
+            justify-content: start;
+            align-items: center;
+            gap: 10px;
+
+            border: 2px solid var(--fg-color);
+            background-color: var(--fg-color);
+            border-radius: 5px;
+            color: white;
+            height: 90%;
+            padding: 5px;
+
+            text-decoration: none;
+        }
+        > a:hover {
+            background-color: white;
+            color: var(--fg-color);
+        }
+    }
+
+    > .branch-preview {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 5px;
+        padding: 5px;
+        
+        /*border: 2px solid var(--fg-color);
+        background-color: var(--bg-color);*/
+        height: 45px;
+        border-radius: 25px;
+
+        > div {
+            position: relative;
+            height: 100%;
+            border: 2px solid var(--fg-color);
+            background-color: var(--fg-color);
+            color: var(--bg-color);
+            border-radius: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        > div:hover {
+            box-shadow: inset 0px 0px 10px white;
+        }
+        
     }
 }

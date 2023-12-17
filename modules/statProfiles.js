@@ -53,6 +53,38 @@ const statProfiles = {
     }
 };
 
+export function getStats(type, branch, inheritStatProfile) {
+    let val = [];
+    if (branch['statType'] == "custom") {
+        branch['tier'].forEach(function (check, i) {
+            if (check) {
+                val.push(branch[type][i]);
+            }
+        });
+        return val;
+    }
+
+    let profile;
+    let profColor = branch['color']; // For later when we add color-swapping
+    if (branch['statType'] == "profile") {
+        profile = branch['statProfile'][type];
+    } else {
+        profile = inheritStatProfile[type];
+    }
+    // here we would do something to set profColor;
+
+    let statProfile = get(type, profile, profColor);
+    if (typeof(statProfile) == 'number') {
+        statProfile = [statProfile, statProfile, statProfile];
+    }
+    branch['tier'].forEach(function (check, i) {
+        if (check) {
+            val.push(statProfile[i] + parseInt(branch[type][i]));
+        }
+    });
+    return val;
+};
+
 export function get(type, profile, color) {
     type = type.toLowerCase();
     profile = profile.toLowerCase();

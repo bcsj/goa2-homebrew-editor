@@ -1,13 +1,4 @@
-
-
-export var color_map = {
-    red: "#c51a0d",
-    blue: "#395acc", //"#1b3eb6",
-    green: "#64b637",
-    gold: "#d4aa14",
-    silver: "#aaaaaa",
-    purple: "#8148ae"
-};
+import * as colors from "./colors.js";
 
 export var card_settings = {
     canvas: {

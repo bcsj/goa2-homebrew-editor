@@ -1,4 +1,5 @@
-import { color_map, card_settings, layout } from "./constants.js";
+import { card_settings, layout } from "./constants.js";
+import { color_map } from "./colors.js";
 import drawColored from "./drawColored.js";
 
 var gfx = {};
@@ -545,7 +546,8 @@ function render_frame(ctx, card, color, textBoxBottom, height) {
     var supertype = card.supertype;
     var type = card.type;
     var value = card[type != "defenseSkill" ? type : "defense"];
-    var subtype = card.subtype;
+    var check = card.subtypevalue === undefined || card.subtypevalue.trim() == "";
+    var subtype = check ? "none" : card.subtype;
     var subvalue = card.subtypevalue;
 
     var width = layout.textbox.frame.width;

@@ -13,7 +13,7 @@
     <div class="container">
         <div class="main-panel">
             <div class="navigation">
-                <a id="nav-overview" href="#overview"><img src="gui-icons/angle-left-solid.svg" alt="" />Back</a>
+                <a id="nav-overview" href="#overview"><img src="gui-icons/bars-solid.svg" alt="" />Overview</a>
                 <a id="nav-editor" href="#editor"><img src="gui-icons/pen-to-square-solid.svg" alt="" />Editor</a>
                 <a><img src="gui-icons/gear-solid.svg" alt="" />Settings</a>
                 <a><img src="gui-icons/floppy-disk-solid.svg" alt="" />Save</a>
@@ -23,6 +23,12 @@
                 <div class="card-id">
                     <div>Card ID</div>
                     <div><input id="card-id" type="text" value="" placeholder="No ID generated yet ..." disabled /></div>
+                    <div class="card-preview-buttons">
+                        <div><img src="gui-icons/eye-solid.svg" alt="Preview"></div>
+                        <div><button class="tier-I"   id="preview-tier-I"   >I</button></div>
+                        <div><button class="tier-II"  id="preview-tier-II"  >II</button></div>
+                        <div><button class="tier-III" id="preview-tier-III" >III</button></div>
+                    </div>
                 </div>
                 <div>
                     <div>Supertype:</div>
@@ -430,31 +436,54 @@
             <div class="preview-column">
                 <div class="card-preview">
                     <canvas id="card" width="630" height="880" style=""></canvas>
-                    <button onclick="saveCanvasAsPNG()"><img src="gui-icons/file-arrow-down-solid.svg" alt="Download"></button>
-                </div>
-                <div class="card-preview-buttons">
-                    <div><img src="gui-icons/eye-solid.svg" alt="Preview"></div>
-                    <div><button class="tier-I"   id="preview-tier-I"   >Tier I</button></div>
-                    <div><button class="tier-II"  id="preview-tier-II"  >Tier II</button></div>
-                    <div><button class="tier-III" id="preview-tier-III" >Tier III</button></div>
-                </div>
-                <div class="textbox-preview">
-                    <div class="preview">
-                        <p class="tier-I"><b>Tier I:</b> <span id="textbox-tier-I">...</span></p>
-                        <p class="tier-II"><b>Tier II:</b> <span id="textbox-tier-II">...</span></p>
-                        <p class="tier-III"><b>Tier III:</b> <span id="textbox-tier-III">...</span></p>
-                    </div>
+                    <button id="card-preview-save"><img src="gui-icons/file-arrow-down-solid.svg" alt="Download"></button>
                 </div>
             </div>
         </div>
     </div>
+    <template id="branch-template">
+        <div class="branch">
+            <!--<div class="branch-color"></div>-->
+            <div class="branch-type">
+                <img class="type-icon" alt="" />
+                <img class="subtype-icon" alt="" />
+            </div>
+            <div class="branch-content">
+                <div class="branch-initiative">
+                    <img alt="" /><span>9,9,10</span>
+                </div>
+                <div class="branch-defense">
+                    <img alt="" /><span>9,9,10</span>
+                </div>
+                <div class="branch-movement">
+                    <img alt="" /><span>9,9,10</span>
+                </div>
+                <div class="branch-attack">
+                    <img alt="" /><span>9,9,10</span>
+                </div>
+                <span class="branch-items">
+                    <img alt="" />
+                    <img alt="" />
+                </span>
+            </div>
+            <div class="branch-actions">
+                <a href="#editor"><img src="gui-icons/pen-to-square-solid.svg" alt="" /> Edit</a>
+            </div>
+            <div class="branch-preview">
+            </div>
+        </div>
+    </template>
     <!-- OVERVIEW SCRIPT -->
     <script type="module">
+    import { render } from "./modules/card-render.js";
     import * as storage from "./modules/storage.js";
-    import * as constants from "./modules/constants.js";
+    import { color_map, lightenColor } from "./modules/colors.js";
     import * as editor from "./modules/editor.js";
-
+    import { getStats } from "./modules/statProfiles.js";
+    
     const nav_overview = document.getElementById("nav-overview");
+    const canvas = document.getElementById("card");
+    const ctx = canvas.getContext("2d");
     
     window.addEventListener('DOMContentLoaded',function () {
         populate_branch_list();
@@ -471,10 +500,106 @@
 
         var branches = storage.getBranches();
 
+        let ordering = {
+            'gold': [0, 0],
+            'silver': [1, 1],
+            'red': [2, 3],
+            'blue': [4, 5],
+            'green': [6, 7],
+            'purple': [8, 8],
+            'other': 10
+        }
+
         branches.forEach(function (branch_id) {
             let branch = storage.getBranch(branch_id);
+            console.log(branch); // DEBUG
 
-            let branch_div = document.createElement("div");
+            const template = document.querySelector("#branch-template");
+            const clone = template.content.cloneNode(true);
+
+            let divBranch = clone.querySelector(".branch");
+            let fg_color = color_map[branch.color];
+            let bg_color = lightenColor(color_map[branch.color], 0.875);
+            divBranch.style.setProperty('--fg-color', fg_color);
+            divBranch.style.setProperty('--bg-color', bg_color);
+            
+            // TYPE
+            let type = branch.type;
+            if (typeof(type) == "object")
+                type = type[0];
+            type = type.toLowerCase();
+            let img = clone.querySelector(".type-icon");
+            img.src = "icons/" + type + ".png";
+
+            // SUBTYPE
+            let subtype = branch.subtype;
+            if (subtype != "none") {
+                let img = clone.querySelector(".subtype-icon");
+                img.src = "svg/item-" + subtype + ".svg";
+            }
+
+            // STATS
+            ["initiative", "defense", "movement", "attack"].forEach(function (stat) {
+                let img;
+                img = clone.querySelector(".branch-" + stat + " > img");
+                img.src = "svg/item-" + stat + ".svg";
+                
+                let span;
+                span = clone.querySelector(".branch-" + stat + " > span");
+                if (Object.keys(branch).indexOf(stat) > -1) {
+                    let stats = getStats(stat, branch, {});
+                    span.innerHTML = stats.join(','); //branch[stat];
+                    if (stat == "movement" && stats.slice(0, 1)[0] == stats.slice(-1)[0]) {
+                        span.innerHTML = stats.slice(0, 1)[0];
+                    }
+                } else {
+                    span.innerHTML = "-";
+                    span.style.setProperty('color', '#BFBFBF');
+                    img.style.setProperty('filter', 'invert(.25)');
+                }
+            });
+
+            let itemsDiv = clone.querySelector(".branch-items");
+            let imgs = itemsDiv.children;
+            for (var i = 0; i < 2; i++) {
+                if (branch['tier'][i+1]) {
+                    imgs[i].src = "svg/item-" + branch['item'][i+1] + ".svg";
+                }
+            }
+            
+            let editBtn = clone.querySelector(".branch-actions > a");
+            editBtn.addEventListener('click', function (e) {
+                console.log(branch)
+                editor.set_branch(branch);
+                editor.guiUpdate("features");
+                editor.guiUpdate("color");
+            });
+
+            var branch_preview = clone.querySelector(".branch-preview");
+            branch['tier'].forEach(function (e, i) {
+                if (e) {
+                    let div = document.createElement("div");
+                    let tier = 'I'.repeat(i+1)
+                    div.innerHTML = tier;
+                    div.addEventListener("mouseover", function (ee) {
+                        render(ctx, canvas, editor.getCard(branch, tier));
+                    });
+                    branch_preview.append(div);
+                }
+            });
+
+            if (Object.keys(ordering).indexOf(branch.color) > -1) {
+                divBranch.style.setProperty('order', ordering[branch.color][0]);
+                ordering[branch.color][0]++;
+                if (ordering[branch.color][0] > ordering[branch.color][1])
+                    delete ordering[branch.color];
+            } else {
+                divBranch.style.setProperty('order', ordering['other']); 
+                ordering['other']++;
+            }
+            branch_list.appendChild(clone);
+
+            /*let branch_div = document.createElement("div");
             branch_div.classList.add("branch");
             branch_div.style.setProperty('--border-color', constants.color_map[branch.color]);
             //branch_div.style.backgroundColor = constants.color_map[branch.color];
@@ -496,7 +621,7 @@
 
             branch_div.appendChild(card_a);
 
-            branch_list.appendChild(branch_div);
+            branch_list.appendChild(branch_div);*/
         });
         
     }
@@ -681,6 +806,16 @@
                                 ee.disabled = !check;
                             continue;
                         } 
+
+                        // Deal with type-select
+                        if (ee.id == "card-type") {
+                            if (editor.get_feature_level() == "advanced") {
+                                ee.disabled = !check;
+                            } else {
+                                ee.disabled = false;
+                            }
+                            continue;
+                        }
                         ee.disabled = !check;
                     } else if (ee.tagName == "DIV" || ee.tagName == "SPAN") {
                         if (!check) 
@@ -721,20 +856,7 @@
             });
         });
 
-        function updatePreviews(text) {
-            ['I','II','III'].forEach(function(tier) {
-                const elem = document.getElementById("textbox-tier-" + tier);
-                elem.innerHTML = editor.textbox_parser(text, tier);
-            });
-        }
-
         editor.input_textbox.addEventListener("input", function (e) {
-            const text = e.srcElement.value;
-            updatePreviews(text);
-            /*['I','II','III'].forEach(function(tier) {
-                const elem = document.getElementById("textbox-tier-" + tier);
-                elem.innerHTML = editor.textbox_parser(text, tier);
-            });*/
             editorValueChange(); 
         });
 
@@ -756,6 +878,14 @@
         //var event_input = new Event('input');
         //input_textbox.dispatchEvent(event_input);
         updatePreviews(editor.input_textbox.value);
+
+        
+    </script>
+    <script type="module">
+        let saveBtn = document.getElementById("card-preview-save");
+        saveBtn.addEventListener('click', function (e) {
+            saveCanvasAsPNG();
+        });
 
         function saveCanvasAsPNG() {
             // Get the canvas element and its context

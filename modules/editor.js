@@ -1,5 +1,5 @@
 import * as stats from "./statProfiles.js";
-import * as constants from "./constants.js";
+import * as colorTools from "./colors.js";
 
 //=========================================================
 // EDITOR DOM
@@ -137,6 +137,7 @@ export function set_branch(branch) {
     select_card_color.value = branch['color'].capitalize();
     select_supertype.value = branch['supertype'].capitalize();
     
+    console.log(branch['tier'])
     input_tier_toggle[0].checked = branch['tier'][0];
     input_tier_toggle[1].checked = branch['tier'][1];
     input_tier_toggle[2].checked = branch['tier'][2];
@@ -174,7 +175,6 @@ export function set_branch(branch) {
         }
         
     } else {
-        console.log(branch['type']);
         if (branch['type'] == "defense/skill") {
             select_type.value = "Defense/Skill";
         } else {
@@ -327,7 +327,7 @@ export function textbox_parser(str, tier, html = true) {
 
 //=========================================================
 // GUI UPDATERS
-function get_feature_level() {
+export function get_feature_level() {
     const normal = document.getElementById("features-normal").checked;
     if (normal) return "normal";
     const advanced = document.getElementById("features-advanced").checked;
@@ -357,7 +357,7 @@ function guiSetColorOpts(colors) {
 
 function guiToggleTiers(tiers) {
     input_tier_toggle.forEach(function (ee, i) {
-        ee.checked = tiers[i];
+        //ee.checked = tiers[i];
 
         // TODO: CONSIDER CHANGING THIS???
         let event = new Event("change");
@@ -533,14 +533,16 @@ export function guiUpdateColors() {
     var color_bg_off = 'whitesmoke';
 
     const color_str = select_card_color.value.toLowerCase();
-    if (Object.keys(constants.color_map).indexOf(color_str) >= 0) {
-        color_fg = constants.color_map[color_str];
-        var color_rgb = hexToRgb(color_fg);
+    if (Object.keys(colorTools.color_map).indexOf(color_str) >= 0) {
+        color_fg = colorTools.color_map[color_str];
+        /*var color_rgb = colorTools.hexToRgb(color_fg);
         var alpha = .875;
         Object.keys(color_rgb).forEach(function (k) {
             color_rgb[k] = parseInt(color_rgb[k] + alpha * (255 - color_rgb[k]));
         });
-        color_bg = rgbToHex(color_rgb['r'], color_rgb['g'], color_rgb['b']);
+        color_bg = colorTools.rgbToHex(color_rgb['r'], color_rgb['g'], color_rgb['b']);
+        */
+        color_bg = colorTools.lightenColor(color_fg, .875);
         if (color_str == "silver") {
             color_fg_off = color_bg;
             color_bg_off = color_fg;
@@ -559,18 +561,6 @@ export function guiUpdateColors() {
     container[0].style.setProperty('--off-bg-color', color_bg_off);
     container[0].style.setProperty('--off-fg-color', color_fg_off);
     
-}
-
-function rgbToHex(r, g, b) {
-    return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
-}
-function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
 }
 
 function guiUpdateStat(stat = "all") {
