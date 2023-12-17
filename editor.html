@@ -16,19 +16,24 @@
                 <a id="nav-overview" href="#overview"><img src="gui-icons/bars-solid.svg" alt="" />Overview</a>
                 <a id="nav-editor" href="#editor"><img src="gui-icons/pen-to-square-solid.svg" alt="" />Editor</a>
                 <a><img src="gui-icons/gear-solid.svg" alt="" />Settings</a>
-                <a><img src="gui-icons/floppy-disk-solid.svg" alt="" />Save</a>
-                <a><img src="gui-icons/file-arrow-down-solid.svg" alt="" />Download</a>
+                <a><img src="gui-icons/file-arrow-down-solid.svg" alt="" />Download All as Zip</a>
             </div>
             <div class="page" id="editor">
-                <div class="card-id">
-                    <div>Card ID</div>
-                    <div><input id="card-id" type="text" value="" placeholder="No ID generated yet ..." disabled /></div>
+                <div class="editor-menu">
+                    <div><img src="gui-icons/file-solid.svg" alt="" />New Card</div>
+                    <div><img src="gui-icons/floppy-disk-solid.svg" alt="" />Save</div>
+                    <div><img src="gui-icons/trash-solid.svg" alt="" />Delete</div>
                     <div class="card-preview-buttons">
                         <div><img src="gui-icons/eye-solid.svg" alt="Preview"></div>
                         <div><button class="tier-I"   id="preview-tier-I"   >I</button></div>
                         <div><button class="tier-II"  id="preview-tier-II"  >II</button></div>
                         <div><button class="tier-III" id="preview-tier-III" >III</button></div>
                     </div>
+                </div>
+                <div class="card-id">
+                    <div>Card ID</div>
+                    <div><input id="card-id" type="text" value="" placeholder="No ID generated yet ..." disabled /></div>
+                    
                 </div>
                 <div>
                     <div>Supertype:</div>
@@ -422,11 +427,10 @@
                 </div>
             </div>
             <div class="page" id="overview">
-                <!--<div>
-                    <div>TestA</div>
-                    <div>TestB</div>
+                <div>
+                    <div>Hero information here!</div>
                     <div>TestC</div>
-                </div>-->
+                </div>
                 <div id="branch-list"></div>
                 <!--<div>test</div>
                 <div>test</div>-->
@@ -437,6 +441,9 @@
                 <div class="card-preview">
                     <canvas id="card" width="630" height="880" style=""></canvas>
                     <button id="card-preview-save"><img src="gui-icons/file-arrow-down-solid.svg" alt="Download"></button>
+                </div>
+                <div>
+                    Storage usage: Y KB.
                 </div>
             </div>
         </div>
@@ -512,12 +519,14 @@
 
         branches.forEach(function (branch_id) {
             let branch = storage.getBranch(branch_id);
-            console.log(branch); // DEBUG
 
             const template = document.querySelector("#branch-template");
             const clone = template.content.cloneNode(true);
 
             let divBranch = clone.querySelector(".branch");
+            if (branch['id'] == editor.input_card_id.value) {
+                divBranch.classList.add('open-in-editor');
+            }
             let fg_color = color_map[branch.color];
             let bg_color = lightenColor(color_map[branch.color], 0.875);
             divBranch.style.setProperty('--fg-color', fg_color);
@@ -598,30 +607,6 @@
                 ordering['other']++;
             }
             branch_list.appendChild(clone);
-
-            /*let branch_div = document.createElement("div");
-            branch_div.classList.add("branch");
-            branch_div.style.setProperty('--border-color', constants.color_map[branch.color]);
-            //branch_div.style.backgroundColor = constants.color_map[branch.color];
-
-            let color_div = document.createElement("div");
-            color_div.classList.add("color-indicator");
-            color_div.style.backgroundColor = constants.color_map[branch.color];
-            branch_div.appendChild(color_div);
-            
-
-            let card_a = document.createElement("a");
-            card_a.innerHTML = branch.id;
-            card_a.href="#editor";
-            card_a.addEventListener('click', function (e) {
-                editor.set_branch(storage.getBranch(branch_id));
-                editor.guiUpdate("features");
-                editor.guiUpdate("color");
-            });
-
-            branch_div.appendChild(card_a);
-
-            branch_list.appendChild(branch_div);*/
         });
         
     }
@@ -654,7 +639,8 @@
             
             asset_loader(function() { 
                 renderReady = true;
-                document.getElementById("preview-tier-I").click();
+                //document.getElementById("preview-tier-I").click();
+                editorValueChange();
             });
         });
 
@@ -877,7 +863,7 @@
         // DEMO STUFF
         //var event_input = new Event('input');
         //input_textbox.dispatchEvent(event_input);
-        updatePreviews(editor.input_textbox.value);
+        //updatePreviews(editor.input_textbox.value);
 
         
     </script>

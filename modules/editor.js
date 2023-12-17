@@ -137,7 +137,6 @@ export function set_branch(branch) {
     select_card_color.value = branch['color'].capitalize();
     select_supertype.value = branch['supertype'].capitalize();
     
-    console.log(branch['tier'])
     input_tier_toggle[0].checked = branch['tier'][0];
     input_tier_toggle[1].checked = branch['tier'][1];
     input_tier_toggle[2].checked = branch['tier'][2];

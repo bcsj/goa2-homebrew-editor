@@ -36,13 +36,16 @@
 }
 
 .branch:hover {
-    > .branch-color {
-        background-color: var(--fg-color);
-    }
     box-shadow: inset 0px 0px 5px var(--fg-color);
 }
 
+.branch.open-in-editor {
+    box-shadow: inset 0px 0px 5px var(--fg-color), 
+                -15px 0px 0px var(--fg-color);
+}
+
 .branch {
+    position: relative;
     width: 100%;
     height: 55px;
     padding: 5px;
@@ -56,22 +59,6 @@
     border: 3px solid var(--fg-color);
     background-color: var(--bg-color);
     border-radius: 10px;
-
-    /*> .color-indicator {
-        height: 100%;
-        width: 20px;
-    }*/
-
-    /*> .branch-color {
-        height: 45px;
-        aspect-ratio: 1;
-        border-radius: 100%;
-        border: 4px solid var(--fg-color);
-        background-color: var(--bg-color);
-
-        transition: cubic-bezier(0.075, 0.82, 0.165, 1);
-        transition-duration: 1.0s;
-    }*/
 
     > .branch-type {
         display: flex;

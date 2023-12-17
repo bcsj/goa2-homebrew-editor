@@ -50,44 +50,6 @@
     visibility: visible;
 }
 
-.textbox-preview {
-    position: relative;
-    width: 100%;
-    border: 3px dashed var(--fg-color);
-    border-radius: 20px;
-    margin-top: 10px;
-    padding: 25px 10px 5px 10px;
-
-    > .preview {
-        > p {
-            padding-bottom: 5px;
-            margin-bottom: 5px;
-            > b { color: var(--fg-color); }
-        }
-    }
-}
-
-.textbox-preview::before {
-    position: absolute;
-    box-sizing: border-box;
-    top: -15px;
-    left: 20px;
-    content: 'Textbox preview';
-    border: 3px solid var(--fg-color);
-    border-radius: 15px;
-    /*width: 100px;*/
-    height: 30px;
-    overflow: hidden;
-    padding: 3px 15px;
-    background-color: var(--bg-color);
-    font-weight: bold;
-    color: var(--fg-color);
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-}
-
 /****************************************************************
  * EDITOR
  */
@@ -149,40 +111,6 @@
     > input[type="checkbox"] { display: none; }
     > input[type="checkbox"]:not(:checked) + div { display: none; }
 
-    .card-preview-buttons {
-        position: relative;
-        top: -5px;
-        display: flex;
-        width: 100%;
-        flex-direction: row;
-        justify-content: end;
-        align-items: center;
-        gap: 5px;
-    
-        > div {
-            > img {
-                height: 25px;
-            }
-    
-            > button {
-                border-radius: 10px;
-                border: 2px solid var(--fg-color);
-                background-color: var(--bg-color);
-                color: var(--fg-color);
-                height: 25px;
-                width: 25px;
-                cursor: pointer;
-            }
-            > button:enabled:hover {
-                box-shadow: 0px 0px 10px salmon;
-            }
-            > button:disabled {
-                background-color: var(--off-bg-color);
-                color: var(--off-fg-color);
-                border-color: var(--off-fg-color);
-            }
-        }
-    }
 }
 
 /* CARD ID */
@@ -195,6 +123,46 @@
             border: none;
             text-align: left;
             color: inherit;
+        }
+    }
+}
+
+/* EDITOR MENU */
+#editor > .editor-menu {
+    border: none;
+    
+    .card-preview-buttons {
+        position: relative;
+        top: -5px;
+        display: flex;
+        width: 100%;
+        flex-direction: row;
+        justify-content: end;
+        align-items: center;
+        gap: 5px;
+    
+        > div {
+            > img {
+                height: 35px;
+            }
+    
+            > button {
+                border-radius: 10px;
+                border: 2px solid var(--fg-color);
+                background-color: var(--bg-color);
+                color: var(--fg-color);
+                height: 35px;
+                width: 35px;
+                cursor: pointer;
+            }
+            > button:enabled:hover {
+                box-shadow: 0px 0px 10px salmon;
+            }
+            > button:disabled {
+                background-color: var(--off-bg-color);
+                color: var(--off-fg-color);
+                border-color: var(--off-fg-color);
+            }
         }
     }
 }
